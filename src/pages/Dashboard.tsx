@@ -1,7 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowUpRight, ArrowDownRight, TrendingUp, Wallet, Droplets, Coins } from 'lucide-react';
-import { getAssets, getPools, getAccounts } from '@/lib/storage';
-import { calculatePoolPNL, formatCurrency, formatPercentage } from '@/lib/calculations';
+import { useAssets } from '@/hooks/useAssets';
+import { usePools } from '@/hooks/usePools';
+import { useAccounts } from '@/hooks/useAccounts';
+import { calculatePoolPNL, formatPercentage } from '@/lib/calculations';
+import { useCurrency } from '@/hooks/useCurrency';
 import { useMemo } from 'react';
 import {
   LineChart,
@@ -19,9 +22,10 @@ import {
 } from 'recharts';
 
 const Dashboard = () => {
-  const assets = getAssets();
-  const pools = getPools();
-  const accounts = getAccounts();
+  const { assets } = useAssets();
+  const { pools } = usePools();
+  const { accounts } = useAccounts();
+  const { formatCurrency } = useCurrency();
 
   const stats = useMemo(() => {
     const totalAssets = assets.reduce(

@@ -14,7 +14,256 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      accounts: {
+        Row: {
+          balance: number
+          created_at: string
+          currency: string
+          id: string
+          name: string
+          notes: string | null
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          balance?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          name: string
+          notes?: string | null
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          balance?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      assets: {
+        Row: {
+          average_price: number
+          created_at: string
+          current_price: number
+          id: string
+          name: string
+          notes: string | null
+          quantity: number
+          symbol: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          average_price: number
+          created_at?: string
+          current_price: number
+          id?: string
+          name: string
+          notes?: string | null
+          quantity: number
+          symbol: string
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          average_price?: number
+          created_at?: string
+          current_price?: number
+          id?: string
+          name?: string
+          notes?: string | null
+          quantity?: number
+          symbol?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      categories: {
+        Row: {
+          color: string | null
+          created_at: string
+          id: string
+          name: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      liquidity_pools: {
+        Row: {
+          asset1_current_price: number
+          asset1_quantity: number
+          asset1_symbol: string
+          asset2_current_price: number
+          asset2_quantity: number
+          asset2_symbol: string
+          created_at: string
+          end_date: string | null
+          fees_generated: number
+          id: string
+          initial_investment: number
+          notes: string | null
+          pair_name: string
+          range_percentage: number
+          start_date: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          asset1_current_price: number
+          asset1_quantity: number
+          asset1_symbol: string
+          asset2_current_price: number
+          asset2_quantity: number
+          asset2_symbol: string
+          created_at?: string
+          end_date?: string | null
+          fees_generated?: number
+          id?: string
+          initial_investment: number
+          notes?: string | null
+          pair_name: string
+          range_percentage: number
+          start_date: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          asset1_current_price?: number
+          asset1_quantity?: number
+          asset1_symbol?: string
+          asset2_current_price?: number
+          asset2_quantity?: number
+          asset2_symbol?: string
+          created_at?: string
+          end_date?: string | null
+          fees_generated?: number
+          id?: string
+          initial_investment?: number
+          notes?: string | null
+          pair_name?: string
+          range_percentage?: number
+          start_date?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          id: string
+          preferred_currency: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          id: string
+          preferred_currency?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          preferred_currency?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      transactions: {
+        Row: {
+          account_id: string | null
+          amount: number
+          category_id: string | null
+          created_at: string
+          date: string
+          description: string
+          id: string
+          to_account_id: string | null
+          type: string
+          user_id: string
+        }
+        Insert: {
+          account_id?: string | null
+          amount: number
+          category_id?: string | null
+          created_at?: string
+          date?: string
+          description: string
+          id?: string
+          to_account_id?: string | null
+          type: string
+          user_id: string
+        }
+        Update: {
+          account_id?: string | null
+          amount?: number
+          category_id?: string | null
+          created_at?: string
+          date?: string
+          description?: string
+          id?: string
+          to_account_id?: string | null
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_to_account_id_fkey"
+            columns: ["to_account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
