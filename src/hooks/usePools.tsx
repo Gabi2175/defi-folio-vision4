@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { LiquidityPool } from '@/types/finance';
+import { getUserFriendlyError } from '@/lib/errorHandler';
 
 export const usePools = () => {
   const { user } = useAuth();
@@ -15,7 +16,10 @@ export const usePools = () => {
         .select('*')
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
+      if (error) {
+        console.error('Fetch pools error:', error);
+        throw error;
+      }
       
       return data.map(pool => ({
         ...pool,

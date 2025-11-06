@@ -7,17 +7,32 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Wallet } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { loginSchema, signupSchema } from '@/lib/validations';
 
 const Auth = () => {
   const navigate = useNavigate();
   const { signIn, signUp } = useAuth();
   const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
 
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
   const [signupForm, setSignupForm] = useState({ email: '', password: '', confirmPassword: '' });
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate input
+    const validation = loginSchema.safeParse(loginForm);
+    if (!validation.success) {
+      toast({
+        title: 'Erro de validação',
+        description: validation.error.errors[0].message,
+        variant: 'destructive',
+      });
+      return;
+    }
+    
     setLoading(true);
     const { error } = await signIn(loginForm.email, loginForm.password);
     if (!error) {
@@ -28,9 +43,18 @@ const Auth = () => {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (signupForm.password !== signupForm.confirmPassword) {
+    
+    // Validate input
+    const validation = signupSchema.safeParse(signupForm);
+    if (!validation.success) {
+      toast({
+        title: 'Erro de validação',
+        description: validation.error.errors[0].message,
+        variant: 'destructive',
+      });
       return;
     }
+    
     setLoading(true);
     const { error } = await signUp(signupForm.email, signupForm.password);
     if (!error) {

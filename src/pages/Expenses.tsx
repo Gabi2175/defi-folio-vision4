@@ -14,6 +14,8 @@ import { useCurrency } from '@/hooks/useCurrency';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { getUserFriendlyError } from '@/lib/errorHandler';
+import { transactionSchema, categorySchema } from '@/lib/validations';
 
 interface Category {
   id: string;
@@ -100,12 +102,25 @@ const Expenses = () => {
 
   const handleCreateCategory = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate input
+    const validation = categorySchema.safeParse(categoryForm);
+    if (!validation.success) {
+      toast({ 
+        title: 'Erro de validação', 
+        description: validation.error.errors[0].message, 
+        variant: 'destructive' 
+      });
+      return;
+    }
+    
     const { error } = await supabase
       .from('categories')
       .insert([{ ...categoryForm, user_id: user!.id }]);
 
     if (error) {
-      toast({ title: 'Erro', description: error.message, variant: 'destructive' });
+      console.error('Create category error:', error);
+      toast({ title: 'Erro', description: getUserFriendlyError(error), variant: 'destructive' });
     } else {
       toast({ title: 'Categoria criada com sucesso!' });
       setCategoryDialogOpen(false);
@@ -123,6 +138,25 @@ const Expenses = () => {
     }
     
     const amount = parseFloat(transactionForm.amount);
+    
+    // Validate input
+    const validation = transactionSchema.safeParse({
+      amount,
+      description: transactionForm.description,
+      date: transactionForm.date,
+      type: transactionForm.type,
+      accountId: transactionForm.accountId,
+      categoryId: transactionForm.categoryId || undefined
+    });
+    
+    if (!validation.success) {
+      toast({ 
+        title: 'Erro de validação', 
+        description: validation.error.errors[0].message, 
+        variant: 'destructive' 
+      });
+      return;
+    }
 
     const { error: transError } = await supabase
       .from('transactions')
@@ -137,23 +171,29 @@ const Expenses = () => {
       }]);
 
     if (transError) {
-      toast({ title: 'Erro', description: transError.message, variant: 'destructive' });
+      console.error('Create transaction error:', transError);
+      toast({ title: 'Erro', description: getUserFriendlyError(transError), variant: 'destructive' });
       return;
     }
 
-    const account = accounts.find(a => a.id === transactionForm.accountId);
-    if (account) {
-      const newBalance = transactionForm.type === 'income' 
-        ? account.balance + amount 
-        : account.balance - amount;
+    // Use atomic balance update function to prevent race conditions
+    const { error: balanceError } = await supabase.rpc('update_account_balance', {
+      p_account_id: transactionForm.accountId,
+      p_amount: amount,
+      p_transaction_type: transactionForm.type
+    });
 
-      await supabase
-        .from('accounts')
-        .update({ balance: newBalance })
-        .eq('id', transactionForm.accountId);
+    if (balanceError) {
+      console.error('Update balance error:', balanceError);
+      toast({ 
+        title: 'Aviso', 
+        description: 'Transação criada, mas houve um erro ao atualizar o saldo.', 
+        variant: 'destructive' 
+      });
+    } else {
+      toast({ title: 'Transação registrada com sucesso!' });
     }
 
-    toast({ title: 'Transação registrada com sucesso!' });
     setTransactionDialogOpen(false);
     setTransactionForm({
       type: 'expense',

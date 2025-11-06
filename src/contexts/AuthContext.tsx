@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { getUserFriendlyError } from '@/lib/errorHandler';
 
 interface AuthContextType {
   user: User | null;
@@ -48,9 +49,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
 
     if (error) {
+      console.error('Signup error:', error);
       toast({
         title: 'Erro ao criar conta',
-        description: error.message,
+        description: getUserFriendlyError(error),
         variant: 'destructive'
       });
     } else {
@@ -70,9 +72,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
 
     if (error) {
+      console.error('Login error:', error);
       toast({
         title: 'Erro ao fazer login',
-        description: error.message,
+        description: getUserFriendlyError(error),
         variant: 'destructive'
       });
     }
@@ -83,9 +86,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signOut = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
+      console.error('Logout error:', error);
       toast({
         title: 'Erro ao sair',
-        description: error.message,
+        description: getUserFriendlyError(error),
         variant: 'destructive'
       });
     }

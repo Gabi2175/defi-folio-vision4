@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Asset } from '@/types/finance';
+import { getUserFriendlyError } from '@/lib/errorHandler';
 
 export const useAssets = () => {
   const { user } = useAuth();
@@ -15,7 +16,10 @@ export const useAssets = () => {
         .select('*')
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
+      if (error) {
+        console.error('Fetch assets error:', error);
+        throw error;
+      }
       
       return data.map(asset => ({
         ...asset,
