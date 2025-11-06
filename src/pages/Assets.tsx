@@ -4,9 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Plus, Pencil, Trash2, TrendingUp, TrendingDown } from 'lucide-react';
-import { getAssets, addAsset, updateAsset, deleteAsset } from '@/lib/storage';
+import { useAssets } from '@/hooks/useAssets';
+import { useCurrency } from '@/hooks/useCurrency';
 import { Asset } from '@/types/finance';
-import { formatCurrency } from '@/lib/calculations';
 import { useToast } from '@/hooks/use-toast';
 import {
   Dialog,
@@ -32,7 +32,8 @@ import {
 } from '@/components/ui/table';
 
 const Assets = () => {
-  const [assets, setAssets] = useState<Asset[]>(getAssets());
+  const { assets, createAsset, updateAsset, deleteAsset } = useAssets();
+  const { formatCurrency } = useCurrency();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingAsset, setEditingAsset] = useState<Asset | null>(null);
   const { toast } = useToast();
@@ -60,42 +61,54 @@ const Assets = () => {
     setEditingAsset(null);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    try {
-      if (editingAsset) {
-        updateAsset(editingAsset.id, {
-          ...formData,
-          averagePrice: parseFloat(formData.averagePrice),
-          currentPrice: parseFloat(formData.currentPrice),
-          quantity: parseFloat(formData.quantity),
-        });
-        toast({
-          title: 'Ativo atualizado',
-          description: 'O ativo foi atualizado com sucesso.',
-        });
-      } else {
-        addAsset({
-          ...formData,
-          averagePrice: parseFloat(formData.averagePrice),
-          currentPrice: parseFloat(formData.currentPrice),
-          quantity: parseFloat(formData.quantity),
-        });
-        toast({
-          title: 'Ativo adicionado',
-          description: 'O ativo foi adicionado com sucesso.',
-        });
-      }
-      
-      setAssets(getAssets());
-      setDialogOpen(false);
-      resetForm();
-    } catch (error) {
-      toast({
-        title: 'Erro',
-        description: 'Ocorreu um erro ao salvar o ativo.',
-        variant: 'destructive',
+    const assetData = {
+      name: formData.name,
+      symbol: formData.symbol,
+      type: formData.type,
+      averagePrice: parseFloat(formData.averagePrice),
+      currentPrice: parseFloat(formData.currentPrice),
+      quantity: parseFloat(formData.quantity),
+      notes: formData.notes || undefined,
+    };
+
+    if (editingAsset) {
+      updateAsset.mutate({ ...assetData, id: editingAsset.id } as Asset, {
+        onSuccess: () => {
+          toast({
+            title: 'Ativo atualizado',
+            description: 'O ativo foi atualizado com sucesso.',
+          });
+          setDialogOpen(false);
+          resetForm();
+        },
+        onError: () => {
+          toast({
+            title: 'Erro',
+            description: 'Ocorreu um erro ao atualizar o ativo.',
+            variant: 'destructive',
+          });
+        }
+      });
+    } else {
+      createAsset.mutate(assetData, {
+        onSuccess: () => {
+          toast({
+            title: 'Ativo adicionado',
+            description: 'O ativo foi adicionado com sucesso.',
+          });
+          setDialogOpen(false);
+          resetForm();
+        },
+        onError: () => {
+          toast({
+            title: 'Erro',
+            description: 'Ocorreu um erro ao adicionar o ativo.',
+            variant: 'destructive',
+          });
+        }
       });
     }
   };
@@ -116,11 +129,20 @@ const Assets = () => {
 
   const handleDelete = (id: string) => {
     if (confirm('Tem certeza que deseja excluir este ativo?')) {
-      deleteAsset(id);
-      setAssets(getAssets());
-      toast({
-        title: 'Ativo excluído',
-        description: 'O ativo foi excluído com sucesso.',
+      deleteAsset.mutate(id, {
+        onSuccess: () => {
+          toast({
+            title: 'Ativo excluído',
+            description: 'O ativo foi excluído com sucesso.',
+          });
+        },
+        onError: () => {
+          toast({
+            title: 'Erro',
+            description: 'Ocorreu um erro ao excluir o ativo.',
+            variant: 'destructive',
+          });
+        }
       });
     }
   };

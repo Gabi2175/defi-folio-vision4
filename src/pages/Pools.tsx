@@ -4,9 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
-import { getPools, addPool, updatePool, deletePool, getAssets } from '@/lib/storage';
+import { usePools } from '@/hooks/usePools';
+import { useAssets } from '@/hooks/useAssets';
+import { useCurrency } from '@/hooks/useCurrency';
 import { LiquidityPool } from '@/types/finance';
-import { calculatePoolPNL, formatCurrency, formatDate } from '@/lib/calculations';
+import { calculatePoolPNL, formatDate } from '@/lib/calculations';
 import { useToast } from '@/hooks/use-toast';
 import {
   Dialog,
@@ -32,10 +34,11 @@ import {
 } from '@/components/ui/select';
 
 const Pools = () => {
-  const [pools, setPools] = useState<LiquidityPool[]>(getPools());
+  const { pools, createPool, updatePool, deletePool } = usePools();
+  const { assets } = useAssets();
+  const { formatCurrency } = useCurrency();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingPool, setEditingPool] = useState<LiquidityPool | null>(null);
-  const assets = getAssets();
   const { toast } = useToast();
 
   const [formData, setFormData] = useState({
@@ -98,45 +101,60 @@ const Pools = () => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    try {
-      const poolData = {
-        ...formData,
-        pairName: formData.pairName || `${formData.asset1Symbol}/${formData.asset2Symbol}`,
-        initialInvestment: parseFloat(formData.initialInvestment),
-        feesGenerated: parseFloat(formData.feesGenerated),
-        rangePercentage: parseFloat(formData.rangePercentage),
-        asset1CurrentPrice: parseFloat(formData.asset1CurrentPrice),
-        asset2CurrentPrice: parseFloat(formData.asset2CurrentPrice),
-        asset1Quantity: parseFloat(formData.asset1Quantity),
-        asset2Quantity: parseFloat(formData.asset2Quantity),
-        endDate: formData.endDate || undefined,
-      };
+    const poolData = {
+      pairName: formData.pairName || `${formData.asset1Symbol}/${formData.asset2Symbol}`,
+      asset1Symbol: formData.asset1Symbol,
+      asset2Symbol: formData.asset2Symbol,
+      startDate: formData.startDate,
+      endDate: formData.endDate || undefined,
+      initialInvestment: parseFloat(formData.initialInvestment),
+      feesGenerated: parseFloat(formData.feesGenerated),
+      rangePercentage: parseFloat(formData.rangePercentage),
+      asset1CurrentPrice: parseFloat(formData.asset1CurrentPrice),
+      asset2CurrentPrice: parseFloat(formData.asset2CurrentPrice),
+      asset1Quantity: parseFloat(formData.asset1Quantity),
+      asset2Quantity: parseFloat(formData.asset2Quantity),
+      notes: formData.notes || undefined,
+    };
 
-      if (editingPool) {
-        updatePool(editingPool.id, poolData);
-        toast({
-          title: 'Pool atualizada',
-          description: 'A pool foi atualizada com sucesso.',
-        });
-      } else {
-        addPool(poolData);
-        toast({
-          title: 'Pool adicionada',
-          description: 'A pool foi adicionada com sucesso.',
-        });
-      }
-      
-      setPools(getPools());
-      setDialogOpen(false);
-      resetForm();
-    } catch (error) {
-      toast({
-        title: 'Erro',
-        description: 'Ocorreu um erro ao salvar a pool.',
-        variant: 'destructive',
+    if (editingPool) {
+      updatePool.mutate({ ...poolData, id: editingPool.id } as LiquidityPool, {
+        onSuccess: () => {
+          toast({
+            title: 'Pool atualizada',
+            description: 'A pool foi atualizada com sucesso.',
+          });
+          setDialogOpen(false);
+          resetForm();
+        },
+        onError: () => {
+          toast({
+            title: 'Erro',
+            description: 'Ocorreu um erro ao atualizar a pool.',
+            variant: 'destructive',
+          });
+        }
+      });
+    } else {
+      createPool.mutate(poolData, {
+        onSuccess: () => {
+          toast({
+            title: 'Pool adicionada',
+            description: 'A pool foi adicionada com sucesso.',
+          });
+          setDialogOpen(false);
+          resetForm();
+        },
+        onError: () => {
+          toast({
+            title: 'Erro',
+            description: 'Ocorreu um erro ao adicionar a pool.',
+            variant: 'destructive',
+          });
+        }
       });
     }
   };
@@ -163,11 +181,20 @@ const Pools = () => {
 
   const handleDelete = (id: string) => {
     if (confirm('Tem certeza que deseja excluir esta pool?')) {
-      deletePool(id);
-      setPools(getPools());
-      toast({
-        title: 'Pool excluída',
-        description: 'A pool foi excluída com sucesso.',
+      deletePool.mutate(id, {
+        onSuccess: () => {
+          toast({
+            title: 'Pool excluída',
+            description: 'A pool foi excluída com sucesso.',
+          });
+        },
+        onError: () => {
+          toast({
+            title: 'Erro',
+            description: 'Ocorreu um erro ao excluir a pool.',
+            variant: 'destructive',
+          });
+        }
       });
     }
   };

@@ -116,6 +116,12 @@ const Expenses = () => {
 
   const handleCreateTransaction = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!transactionForm.accountId) {
+      toast({ title: 'Erro', description: 'Por favor, selecione uma conta.', variant: 'destructive' });
+      return;
+    }
+    
     const amount = parseFloat(transactionForm.amount);
 
     const { error: transError } = await supabase
@@ -264,15 +270,21 @@ const Expenses = () => {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>Conta</Label>
-                  <Select value={transactionForm.accountId} onValueChange={(value) => setTransactionForm({ ...transactionForm, accountId: value })}>
+                  <Label>Conta *</Label>
+                  <Select value={transactionForm.accountId} onValueChange={(value) => setTransactionForm({ ...transactionForm, accountId: value })} required>
                     <SelectTrigger>
                       <SelectValue placeholder="Selecione uma conta" />
                     </SelectTrigger>
                     <SelectContent>
-                      {accounts.map(account => (
-                        <SelectItem key={account.id} value={account.id}>{account.name}</SelectItem>
-                      ))}
+                      {accounts.length === 0 ? (
+                        <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                          Nenhuma conta disponível. Crie uma conta primeiro.
+                        </div>
+                      ) : (
+                        accounts.map(account => (
+                          <SelectItem key={account.id} value={account.id}>{account.name}</SelectItem>
+                        ))
+                      )}
                     </SelectContent>
                   </Select>
                 </div>

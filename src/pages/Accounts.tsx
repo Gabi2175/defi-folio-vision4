@@ -1,13 +1,16 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Plus, Pencil, Trash2, ArrowUpRight, ArrowDownRight, ArrowLeftRight } from 'lucide-react';
-import { getAccounts, addAccount, updateAccount, deleteAccount, getTransactions, addTransaction } from '@/lib/storage';
-import { Account, Transaction } from '@/types/finance';
-import { formatCurrency, formatDate } from '@/lib/calculations';
+import { useAccounts } from '@/hooks/useAccounts';
+import { useCurrency } from '@/hooks/useCurrency';
+import { Account } from '@/types/finance';
+import { formatDate } from '@/lib/calculations';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   Dialog,
   DialogContent,
@@ -32,9 +35,20 @@ import {
 } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
+interface Transaction {
+  id: string;
+  type: string;
+  amount: number;
+  description: string;
+  date: string;
+  accounts?: { name: string };
+}
+
 const Accounts = () => {
-  const [accounts, setAccounts] = useState<Account[]>(getAccounts());
-  const [transactions, setTransactions] = useState<Transaction[]>(getTransactions());
+  const { user } = useAuth();
+  const { accounts, createAccount, updateAccount, deleteAccount } = useAccounts();
+  const { formatCurrency } = useCurrency();
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [accountDialogOpen, setAccountDialogOpen] = useState(false);
   const [transactionDialogOpen, setTransactionDialogOpen] = useState(false);
   const [editingAccount, setEditingAccount] = useState<Account | null>(null);
@@ -81,68 +95,108 @@ const Accounts = () => {
     });
   };
 
-  const handleAccountSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (user) {
+      loadTransactions();
+    }
+  }, [user]);
+
+  const loadTransactions = async () => {
+    const { data, error } = await supabase
+      .from('transactions')
+      .select(`
+        *,
+        accounts!transactions_account_id_fkey(name)
+      `)
+      .order('date', { ascending: false })
+      .limit(50);
+    if (!error && data) setTransactions(data);
+  };
+
+  const handleAccountSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    try {
-      if (editingAccount) {
-        updateAccount(editingAccount.id, {
-          ...accountForm,
-          balance: parseFloat(accountForm.balance),
-        });
-        toast({
-          title: 'Conta atualizada',
-          description: 'A conta foi atualizada com sucesso.',
-        });
-      } else {
-        addAccount({
-          ...accountForm,
-          balance: parseFloat(accountForm.balance),
-        });
-        toast({
-          title: 'Conta adicionada',
-          description: 'A conta foi adicionada com sucesso.',
-        });
-      }
-      
-      setAccounts(getAccounts());
-      setAccountDialogOpen(false);
-      resetAccountForm();
-    } catch (error) {
-      toast({
-        title: 'Erro',
-        description: 'Ocorreu um erro ao salvar a conta.',
-        variant: 'destructive',
+    const accountData = {
+      name: accountForm.name,
+      type: accountForm.type,
+      balance: parseFloat(accountForm.balance),
+      currency: accountForm.currency,
+      notes: accountForm.notes || undefined,
+    };
+
+    if (editingAccount) {
+      updateAccount.mutate({ ...accountData, id: editingAccount.id } as Account, {
+        onSuccess: () => {
+          toast({
+            title: 'Conta atualizada',
+            description: 'A conta foi atualizada com sucesso.',
+          });
+          setAccountDialogOpen(false);
+          resetAccountForm();
+        },
+        onError: () => {
+          toast({
+            title: 'Erro',
+            description: 'Ocorreu um erro ao atualizar a conta.',
+            variant: 'destructive',
+          });
+        }
+      });
+    } else {
+      createAccount.mutate(accountData, {
+        onSuccess: () => {
+          toast({
+            title: 'Conta adicionada',
+            description: 'A conta foi adicionada com sucesso.',
+          });
+          setAccountDialogOpen(false);
+          resetAccountForm();
+        },
+        onError: () => {
+          toast({
+            title: 'Erro',
+            description: 'Ocorreu um erro ao adicionar a conta.',
+            variant: 'destructive',
+          });
+        }
       });
     }
   };
 
-  const handleTransactionSubmit = (e: React.FormEvent) => {
+  const handleTransactionSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    try {
-      addTransaction({
-        ...transactionForm,
-        amount: parseFloat(transactionForm.amount),
-        toAccountId: transactionForm.type === 'transfer' ? transactionForm.toAccountId : undefined,
-      });
-      
-      setAccounts(getAccounts());
-      setTransactions(getTransactions());
-      setTransactionDialogOpen(false);
-      resetTransactionForm();
-      
-      toast({
-        title: 'Transação adicionada',
-        description: 'A transação foi registrada com sucesso.',
-      });
-    } catch (error) {
+    const amount = parseFloat(transactionForm.amount);
+    
+    const { error } = await supabase
+      .from('transactions')
+      .insert([{
+        user_id: user!.id,
+        type: transactionForm.type,
+        amount,
+        description: transactionForm.description,
+        date: transactionForm.date,
+        account_id: transactionForm.accountId || null,
+        to_account_id: transactionForm.type === 'transfer' ? transactionForm.toAccountId : null,
+      }]);
+    
+    if (error) {
       toast({
         title: 'Erro',
-        description: 'Ocorreu um erro ao registrar a transação.',
+        description: error.message,
         variant: 'destructive',
       });
+      return;
     }
+    
+    loadTransactions();
+    setTransactionDialogOpen(false);
+    resetTransactionForm();
+    
+    toast({
+      title: 'Transação adicionada',
+      description: 'A transação foi registrada com sucesso.',
+    });
   };
 
   const handleEditAccount = (account: Account) => {
@@ -159,11 +213,20 @@ const Accounts = () => {
 
   const handleDeleteAccount = (id: string) => {
     if (confirm('Tem certeza que deseja excluir esta conta?')) {
-      deleteAccount(id);
-      setAccounts(getAccounts());
-      toast({
-        title: 'Conta excluída',
-        description: 'A conta foi excluída com sucesso.',
+      deleteAccount.mutate(id, {
+        onSuccess: () => {
+          toast({
+            title: 'Conta excluída',
+            description: 'A conta foi excluída com sucesso.',
+          });
+        },
+        onError: () => {
+          toast({
+            title: 'Erro',
+            description: 'Ocorreu um erro ao excluir a conta.',
+            variant: 'destructive',
+          });
+        }
       });
     }
   };
@@ -465,7 +528,6 @@ const Accounts = () => {
                         <TableHead>Data</TableHead>
                         <TableHead>Tipo</TableHead>
                         <TableHead>Conta</TableHead>
-                        <TableHead>Categoria</TableHead>
                         <TableHead>Descrição</TableHead>
                         <TableHead className="text-right">Valor</TableHead>
                       </TableRow>
@@ -474,7 +536,6 @@ const Accounts = () => {
                       {transactions
                         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
                         .map((transaction) => {
-                          const account = accounts.find((a) => a.id === transaction.accountId);
                           return (
                             <TableRow key={transaction.id}>
                               <TableCell>{formatDate(transaction.date)}</TableCell>
@@ -489,11 +550,10 @@ const Accounts = () => {
                                   {transaction.type === 'transfer' && (
                                     <ArrowLeftRight className="h-4 w-4 text-primary" />
                                   )}
-                                  <span className="capitalize">{transaction.type}</span>
+                                  <span className="capitalize">{transaction.type === 'transfer' ? 'Transferência' : transaction.type === 'income' ? 'Receita' : 'Despesa'}</span>
                                 </div>
                               </TableCell>
-                              <TableCell>{account?.name}</TableCell>
-                              <TableCell>{transaction.category}</TableCell>
+                              <TableCell>{transaction.accounts?.name}</TableCell>
                               <TableCell>{transaction.description}</TableCell>
                               <TableCell className="text-right">
                                 <span
