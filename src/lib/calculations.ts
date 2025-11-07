@@ -17,7 +17,9 @@ export const calculatePoolPNL = (pool: LiquidityPool): PoolPNL => {
   };
 };
 
-export const formatCurrency = (value: number, currency: string = 'USD'): string => {
+export const formatCurrency = (value: number, currency: string = 'USD', fromCurrency: 'USD' | 'BRL' = 'USD'): string => {
+  // This function is deprecated in favor of useCurrency.formatCurrency
+  // Kept for backwards compatibility
   return new Intl.NumberFormat('pt-BR', {
     style: 'currency',
     currency: currency,

@@ -10,6 +10,7 @@ import {
   TrendingDown,
   DollarSign
 } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -34,7 +35,7 @@ export const Layout = ({ children }: LayoutProps) => {
   const location = useLocation();
   const [open, setOpen] = useState(false);
   const { signOut } = useAuth();
-  const { currency, setCurrency } = useCurrency();
+  const { currency, setCurrency, exchangeRate, setExchangeRate } = useCurrency();
 
   const NavLinks = () => (
     <>
@@ -117,6 +118,19 @@ export const Layout = ({ children }: LayoutProps) => {
                     <SelectItem value="BRL">BRL (R$)</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm text-muted-foreground">
+                  Cotação (1 USD = ? BRL)
+                </label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  min="0.01"
+                  value={exchangeRate}
+                  onChange={(e) => setExchangeRate(parseFloat(e.target.value) || 1)}
+                  className="w-full"
+                />
               </div>
               <Button variant="outline" className="w-full" onClick={signOut}>
                 <LogOut className="h-4 w-4 mr-2" />
