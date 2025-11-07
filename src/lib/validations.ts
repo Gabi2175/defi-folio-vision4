@@ -134,3 +134,12 @@ export const poolSchema = z.object({
     .max(1000, 'Notas muito longas')
     .optional(),
 });
+
+// Exchange Rate validations
+export const exchangeRateSchema = z.object({
+  rate: z.number()
+    .positive('A cotação deve ser um valor positivo')
+    .min(0.01, 'A cotação mínima é 0.01')
+    .max(10000, 'A cotação máxima é 10000')
+    .finite('A cotação deve ser um número válido')
+});

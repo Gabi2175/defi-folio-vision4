@@ -18,6 +18,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCurrency } from '@/hooks/useCurrency';
+import { exchangeRateSchema } from '@/lib/validations';
+import { useToast } from '@/hooks/use-toast';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -36,6 +38,29 @@ export const Layout = ({ children }: LayoutProps) => {
   const [open, setOpen] = useState(false);
   const { signOut } = useAuth();
   const { currency, setCurrency, exchangeRate, setExchangeRate } = useCurrency();
+  const { toast } = useToast();
+
+  const handleExchangeRateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseFloat(e.target.value);
+    
+    if (isNaN(value)) {
+      setExchangeRate(5.0);
+      return;
+    }
+
+    const validation = exchangeRateSchema.safeParse({ rate: value });
+    
+    if (validation.success) {
+      setExchangeRate(value);
+    } else {
+      toast({
+        title: 'Cotação inválida',
+        description: validation.error.errors[0].message,
+        variant: 'destructive'
+      });
+      setExchangeRate(5.0);
+    }
+  };
 
   const NavLinks = () => (
     <>
@@ -127,8 +152,12 @@ export const Layout = ({ children }: LayoutProps) => {
                   type="number"
                   step="0.01"
                   min="0.01"
+                  max="10000"
                   value={exchangeRate}
-                  onChange={(e) => setExchangeRate(parseFloat(e.target.value) || 1)}
+                  onChange={handleExchangeRateChange}
+                  onBlur={() => {
+                    if (exchangeRate <= 0) setExchangeRate(5.0);
+                  }}
                   className="w-full"
                 />
               </div>

@@ -33,7 +33,9 @@ export const useTransactions = () => {
         .order('date', { ascending: false });
       
       if (error) {
-        console.error('Fetch transactions error:', error);
+        if (import.meta.env.DEV) {
+          console.error('Fetch transactions error:', error);
+        }
         throw error;
       }
       
