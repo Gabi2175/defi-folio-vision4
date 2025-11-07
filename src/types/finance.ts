@@ -37,6 +37,7 @@ export interface Account {
   balance: number;
   currency: string;
   notes?: string;
+  isActive: boolean;
   createdAt: string;
   updatedAt: string;
 }

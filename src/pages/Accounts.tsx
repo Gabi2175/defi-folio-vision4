@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Plus, Pencil, Trash2, ArrowUpRight, ArrowDownRight, ArrowLeftRight } from 'lucide-react';
+import { Plus, Pencil, Trash2, ArrowUpRight, ArrowDownRight, ArrowLeftRight, Eye, EyeOff } from 'lucide-react';
 import { useAccounts } from '@/hooks/useAccounts';
 import { useCurrency } from '@/hooks/useCurrency';
 import { Account } from '@/types/finance';
@@ -122,6 +122,7 @@ const Accounts = () => {
       balance: parseFloat(accountForm.balance),
       currency: accountForm.currency,
       notes: accountForm.notes || undefined,
+      isActive: true,
     };
 
     if (editingAccount) {
@@ -211,6 +212,20 @@ const Accounts = () => {
     setAccountDialogOpen(true);
   };
 
+  const toggleAccountActive = async (account: Account) => {
+    updateAccount.mutate(
+      { ...account, isActive: !account.isActive },
+      {
+        onSuccess: () => {
+          toast({
+            title: account.isActive ? 'Conta desativada' : 'Conta ativada',
+            description: `A conta ${account.name} foi ${account.isActive ? 'removida' : 'incluída'} dos cálculos.`,
+          });
+        },
+      }
+    );
+  };
+
   const handleDeleteAccount = (id: string) => {
     if (confirm('Tem certeza que deseja excluir esta conta?')) {
       deleteAccount.mutate(id, {
@@ -231,7 +246,9 @@ const Accounts = () => {
     }
   };
 
-  const totalBalance = accounts.reduce((sum, account) => sum + account.balance, 0);
+  const totalBalance = accounts
+    .filter(account => account.isActive)
+    .reduce((sum, account) => sum + account.balance, 0);
 
   return (
     <div className="space-y-6">
@@ -474,10 +491,22 @@ const Accounts = () => {
         <TabsContent value="accounts" className="space-y-6">
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {accounts.map((account) => (
-              <Card key={account.id}>
+              <Card key={account.id} className={!account.isActive ? 'opacity-50' : ''}>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">{account.name}</CardTitle>
                   <div className="flex gap-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => toggleAccountActive(account)}
+                      title={account.isActive ? 'Desativar conta' : 'Ativar conta'}
+                    >
+                      {account.isActive ? (
+                        <Eye className="h-4 w-4" />
+                      ) : (
+                        <EyeOff className="h-4 w-4" />
+                      )}
+                    </Button>
                     <Button
                       variant="ghost"
                       size="icon"

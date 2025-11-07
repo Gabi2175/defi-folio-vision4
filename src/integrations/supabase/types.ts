@@ -20,6 +20,7 @@ export type Database = {
           created_at: string
           currency: string
           id: string
+          is_active: boolean
           name: string
           notes: string | null
           type: string
@@ -31,6 +32,7 @@ export type Database = {
           created_at?: string
           currency?: string
           id?: string
+          is_active?: boolean
           name: string
           notes?: string | null
           type: string
@@ -42,6 +44,7 @@ export type Database = {
           created_at?: string
           currency?: string
           id?: string
+          is_active?: boolean
           name?: string
           notes?: string | null
           type?: string

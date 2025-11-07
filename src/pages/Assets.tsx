@@ -3,11 +3,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Plus, Pencil, Trash2, TrendingUp, TrendingDown } from 'lucide-react';
+import { Plus, Pencil, Trash2, TrendingUp, TrendingDown, ShoppingCart } from 'lucide-react';
 import { useAssets } from '@/hooks/useAssets';
 import { useCurrency } from '@/hooks/useCurrency';
 import { Asset } from '@/types/finance';
 import { useToast } from '@/hooks/use-toast';
+import { AssetTransactionDialog } from '@/components/AssetTransactionDialog';
 import {
   Dialog,
   DialogContent,
@@ -35,6 +36,7 @@ const Assets = () => {
   const { assets, createAsset, updateAsset, deleteAsset } = useAssets();
   const { formatCurrency } = useCurrency();
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [transactionDialogOpen, setTransactionDialogOpen] = useState(false);
   const [editingAsset, setEditingAsset] = useState<Asset | null>(null);
   const { toast } = useToast();
 
@@ -173,16 +175,21 @@ const Assets = () => {
           <h1 className="text-4xl font-bold text-foreground mb-2">Ativos</h1>
           <p className="text-muted-foreground">Controle seus preços médios e patrimônio</p>
         </div>
-        <Dialog open={dialogOpen} onOpenChange={(open) => {
-          setDialogOpen(open);
-          if (!open) resetForm();
-        }}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              Adicionar Ativo
-            </Button>
-          </DialogTrigger>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setTransactionDialogOpen(true)}>
+            <ShoppingCart className="mr-2 h-4 w-4" />
+            Comprar/Vender
+          </Button>
+          <Dialog open={dialogOpen} onOpenChange={(open) => {
+            setDialogOpen(open);
+            if (!open) resetForm();
+          }}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="mr-2 h-4 w-4" />
+                Adicionar Ativo
+              </Button>
+            </DialogTrigger>
           <DialogContent className="max-w-md">
             <DialogHeader>
               <DialogTitle>
@@ -274,8 +281,9 @@ const Assets = () => {
                 {editingAsset ? 'Atualizar' : 'Adicionar'}
               </Button>
             </form>
-          </DialogContent>
-        </Dialog>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       {/* Summary Cards */}
@@ -409,6 +417,12 @@ const Assets = () => {
           )}
         </CardContent>
       </Card>
+
+      <AssetTransactionDialog
+        open={transactionDialogOpen}
+        onOpenChange={setTransactionDialogOpen}
+        assets={assets}
+      />
     </div>
   );
 };

@@ -48,7 +48,9 @@ const Dashboard = () => {
       ? poolsData.reduce((sum, pnl) => sum + pnl.profitLossPercentage, 0) / poolsData.length
       : 0;
 
-    const totalAccounts = accounts.reduce((sum, account) => sum + account.balance, 0);
+    const totalAccounts = accounts
+      .filter(account => account.isActive)
+      .reduce((sum, account) => sum + account.balance, 0);
 
     const totalWealth = totalAssets + totalPoolValue + totalAccounts;
 
@@ -61,7 +63,7 @@ const Dashboard = () => {
       totalWealth,
       assetsCount: assets.length,
       poolsCount: pools.length,
-      accountsCount: accounts.length,
+      accountsCount: accounts.filter(a => a.isActive).length,
     };
   }, [assets, pools, accounts]);
 

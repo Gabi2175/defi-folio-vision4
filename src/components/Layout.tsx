@@ -10,6 +10,7 @@ import {
   TrendingDown,
   DollarSign
 } from 'lucide-react';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -66,7 +67,9 @@ export const Layout = ({ children }: LayoutProps) => {
       <div className="lg:hidden sticky top-0 z-50 bg-card border-b border-border px-4 py-3">
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-bold text-foreground">FinanceControl</h1>
-          <Sheet open={open} onOpenChange={setOpen}>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon">
                 <Menu className="h-6 w-6" />
@@ -81,6 +84,7 @@ export const Layout = ({ children }: LayoutProps) => {
               </div>
             </SheetContent>
           </Sheet>
+          </div>
         </div>
       </div>
 
@@ -95,6 +99,10 @@ export const Layout = ({ children }: LayoutProps) => {
               </nav>
             </div>
             <div className="space-y-3 pt-4 border-t">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-sm text-muted-foreground">Tema</span>
+                <ThemeToggle />
+              </div>
               <div className="space-y-2">
                 <label className="text-sm text-muted-foreground flex items-center gap-2">
                   <DollarSign className="h-4 w-4" />

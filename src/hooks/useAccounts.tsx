@@ -24,6 +24,7 @@ export const useAccounts = () => {
       return data.map(account => ({
         ...account,
         balance: Number(account.balance),
+        isActive: account.is_active ?? true,
         createdAt: account.created_at,
         updatedAt: account.updated_at
       })) as Account[];
@@ -41,7 +42,8 @@ export const useAccounts = () => {
           type: account.type,
           balance: account.balance,
           currency: account.currency,
-          notes: account.notes
+          notes: account.notes,
+          is_active: account.isActive ?? true
         }])
         .select()
         .single();
@@ -63,7 +65,8 @@ export const useAccounts = () => {
           type: account.type,
           balance: account.balance,
           currency: account.currency,
-          notes: account.notes
+          notes: account.notes,
+          is_active: account.isActive
         })
         .eq('id', account.id);
       
