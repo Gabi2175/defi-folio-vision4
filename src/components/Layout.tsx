@@ -8,7 +8,8 @@ import {
   Menu,
   LogOut,
   TrendingDown,
-  DollarSign
+  DollarSign,
+  CreditCard
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -31,6 +32,7 @@ const navigation = [
   { name: 'Pools de Liquidez', href: '/pools', icon: Droplets },
   { name: 'Contas', href: '/accounts', icon: Wallet },
   { name: 'Gastos', href: '/expenses', icon: TrendingDown },
+  { name: 'Cartões', href: '/cards', icon: CreditCard },
 ];
 
 export const Layout = ({ children }: LayoutProps) => {

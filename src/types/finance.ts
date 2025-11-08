@@ -61,3 +61,25 @@ export interface PoolPNL {
   totalInvested: number;
   totalFees: number;
 }
+
+export interface Card {
+  id: string;
+  accountId: string;
+  name: string;
+  creditLimit: number;
+  usedLimit: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CardTransaction {
+  id: string;
+  cardId: string;
+  description: string;
+  totalAmount: number;
+  installments: number;
+  paidInstallments: number;
+  installmentValue: number;
+  transactionDate: string;
+  createdAt: string;
+}

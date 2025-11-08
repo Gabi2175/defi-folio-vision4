@@ -10,6 +10,7 @@ import Assets from "./pages/Assets";
 import Pools from "./pages/Pools";
 import Accounts from "./pages/Accounts";
 import Expenses from "./pages/Expenses";
+import Cards from "./pages/Cards";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -43,6 +44,7 @@ const App = () => (
             <Route path="/pools" element={<ProtectedRoute><Layout><Pools /></Layout></ProtectedRoute>} />
             <Route path="/accounts" element={<ProtectedRoute><Layout><Accounts /></Layout></ProtectedRoute>} />
             <Route path="/expenses" element={<ProtectedRoute><Layout><Expenses /></Layout></ProtectedRoute>} />
+            <Route path="/cards" element={<ProtectedRoute><Layout><Cards /></Layout></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

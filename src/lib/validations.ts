@@ -143,3 +143,32 @@ export const exchangeRateSchema = z.object({
     .max(10000, 'A cotação máxima é 10000')
     .finite('A cotação deve ser um número válido')
 });
+
+// Card validations
+export const cardSchema = z.object({
+  name: z.string()
+    .trim()
+    .min(1, 'Nome é obrigatório')
+    .max(100, 'Nome muito longo'),
+  creditLimit: z.number()
+    .positive('Limite deve ser positivo')
+    .max(1000000000, 'Limite muito alto'),
+  accountId: z.string().uuid('Selecione uma conta válida'),
+});
+
+// Card Transaction validations
+export const cardTransactionSchema = z.object({
+  cardId: z.string().uuid('Selecione um cartão válido'),
+  description: z.string()
+    .trim()
+    .min(1, 'Descrição é obrigatória')
+    .max(500, 'Descrição muito longa'),
+  totalAmount: z.number()
+    .positive('Valor deve ser positivo')
+    .max(1000000000, 'Valor muito alto'),
+  installments: z.number()
+    .int('Número de parcelas deve ser inteiro')
+    .positive('Número de parcelas deve ser positivo')
+    .min(1, 'Mínimo de 1 parcela')
+    .max(48, 'Máximo de 48 parcelas'),
+});
