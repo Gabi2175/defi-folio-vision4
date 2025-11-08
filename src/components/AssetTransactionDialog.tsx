@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Asset } from '@/types/finance';
 import { useToast } from '@/hooks/use-toast';
 import { useAssets } from '@/hooks/useAssets';
+import { assetTransactionSchema } from '@/lib/validations';
 
 interface AssetTransactionDialogProps {
   open: boolean;
@@ -37,32 +38,66 @@ export const AssetTransactionDialog = ({ open, onOpenChange, assets }: AssetTran
     e.preventDefault();
 
     const selectedAsset = assets.find(a => a.id === transactionForm.assetId);
-    if (!selectedAsset) return;
+    if (!selectedAsset) {
+      toast({
+        title: 'Erro',
+        description: 'Selecione um ativo válido.',
+        variant: 'destructive',
+      });
+      return;
+    }
 
     const price = parseFloat(transactionForm.price);
     const quantity = parseFloat(transactionForm.quantity);
 
-    let newQuantity: number;
-    let newAveragePrice: number;
+    // Add NaN safety checks
+    if (isNaN(price) || isNaN(quantity) || !isFinite(price) || !isFinite(quantity)) {
+      toast({
+        title: 'Erro',
+        description: 'Por favor, insira valores numéricos válidos.',
+        variant: 'destructive',
+      });
+      return;
+    }
 
-    if (transactionForm.type === 'buy') {
-      // Compra: calcula novo preço médio ponderado
-      newQuantity = selectedAsset.quantity + quantity;
-      newAveragePrice = 
-        (selectedAsset.averagePrice * selectedAsset.quantity + price * quantity) / newQuantity;
-    } else {
-      // Venda: mantém preço médio, reduz quantidade
-      newQuantity = selectedAsset.quantity - quantity;
-      
-      if (newQuantity < 0) {
+    // Validate with Zod
+    const validation = assetTransactionSchema.safeParse({
+      assetId: transactionForm.assetId,
+      type: transactionForm.type,
+      price,
+      quantity
+    });
+
+    if (!validation.success) {
+      toast({
+        title: 'Erro de validação',
+        description: validation.error.errors[0].message,
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Additional business logic validation
+    if (transactionForm.type === 'sell') {
+      if (quantity > selectedAsset.quantity) {
         toast({
           title: 'Erro',
-          description: 'Quantidade de venda maior que a quantidade disponível.',
+          description: `Quantidade de venda (${quantity}) maior que a quantidade disponível (${selectedAsset.quantity}).`,
           variant: 'destructive',
         });
         return;
       }
-      
+    }
+
+    // Proceed with calculations (now safe from NaN)
+    let newQuantity: number;
+    let newAveragePrice: number;
+
+    if (transactionForm.type === 'buy') {
+      newQuantity = selectedAsset.quantity + quantity;
+      newAveragePrice = (selectedAsset.averagePrice * selectedAsset.quantity + price * quantity) / newQuantity;
+    } else {
+      newQuantity = selectedAsset.quantity - quantity;
       newAveragePrice = selectedAsset.averagePrice;
     }
 
@@ -138,25 +173,29 @@ export const AssetTransactionDialog = ({ open, onOpenChange, assets }: AssetTran
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="price">Preço</Label>
-              <Input
-                id="price"
-                type="number"
-                step="0.00000001"
-                value={transactionForm.price}
-                onChange={(e) => setTransactionForm({ ...transactionForm, price: e.target.value })}
-                required
-              />
+                <Input
+                  id="price"
+                  type="number"
+                  step="0.00000001"
+                  min="0.00000001"
+                  max="1000000000"
+                  value={transactionForm.price}
+                  onChange={(e) => setTransactionForm({ ...transactionForm, price: e.target.value })}
+                  required
+                />
             </div>
             <div className="space-y-2">
               <Label htmlFor="quantity">Quantidade</Label>
-              <Input
-                id="quantity"
-                type="number"
-                step="0.00000001"
-                value={transactionForm.quantity}
-                onChange={(e) => setTransactionForm({ ...transactionForm, quantity: e.target.value })}
-                required
-              />
+                <Input
+                  id="quantity"
+                  type="number"
+                  step="0.00000001"
+                  min="0.00000001"
+                  max="1000000000"
+                  value={transactionForm.quantity}
+                  onChange={(e) => setTransactionForm({ ...transactionForm, quantity: e.target.value })}
+                  required
+                />
             </div>
           </div>
           <Button type="submit" className="w-full">

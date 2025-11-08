@@ -10,6 +10,7 @@ import { useAccounts } from '@/hooks/useAccounts';
 import { supabase } from '@/integrations/supabase/client';
 import { Card } from '@/types/finance';
 import { useQueryClient } from '@tanstack/react-query';
+import { payInvoiceSchema } from '@/lib/validations';
 
 interface PayInvoiceDialogProps {
   open: boolean;
@@ -52,15 +53,32 @@ export function PayInvoiceDialog({ open, onOpenChange, card }: PayInvoiceDialogP
     }
 
     const numInstallments = parseInt(installmentsToPay);
-    if (isNaN(numInstallments) || numInstallments < 1) {
+    
+    // Add NaN check
+    if (isNaN(numInstallments)) {
       toast({
         title: 'Erro',
-        description: 'Número de parcelas inválido',
+        description: 'Por favor, insira um número válido.',
         variant: 'destructive'
       });
       return;
     }
 
+    // Validate with Zod
+    const validation = payInvoiceSchema.safeParse({
+      installments: numInstallments
+    });
+
+    if (!validation.success) {
+      toast({
+        title: 'Erro de validação',
+        description: validation.error.errors[0].message,
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    // Business logic validation
     if (numInstallments > totalUnpaidInstallments) {
       toast({
         title: 'Erro',
@@ -73,74 +91,72 @@ export function PayInvoiceDialog({ open, onOpenChange, card }: PayInvoiceDialogP
     setIsLoading(true);
 
     try {
-      // Calculate total amount to pay
-      let remainingInstallments = numInstallments;
       let totalAmount = 0;
-      const transactionUpdates: Array<{ id: string; newPaidInstallments: number; installmentValue: number }> = [];
+      const transactionUpdates: Array<{
+        id: string;
+        newPaidInstallments: number;
+        amount: number;
+      }> = [];
 
+      // Calculate total and prepare updates
+      let remainingToPay = numInstallments;
       for (const transaction of unpaidTransactions) {
-        if (remainingInstallments === 0) break;
+        if (remainingToPay <= 0) break;
 
-        const unpaidInThisTransaction = transaction.installments - transaction.paidInstallments;
-        const toPay = Math.min(remainingInstallments, unpaidInThisTransaction);
+        const unpaidInstallments = transaction.installments - transaction.paidInstallments;
+        const toPay = Math.min(remainingToPay, unpaidInstallments);
+        const amount = toPay * transaction.installmentValue;
         
-        totalAmount += toPay * transaction.installmentValue;
+        totalAmount += amount;
         transactionUpdates.push({
           id: transaction.id,
           newPaidInstallments: transaction.paidInstallments + toPay,
-          installmentValue: transaction.installmentValue
+          amount: amount,
         });
 
-        remainingInstallments -= toPay;
+        remainingToPay -= toPay;
       }
 
-      // Check if account has enough balance
+      // Check if account has sufficient balance
       if (linkedAccount.balance < totalAmount) {
         toast({
-          title: 'Saldo insuficiente',
-          description: `Saldo da conta: ${linkedAccount.balance.toFixed(2)}. Valor necessário: ${totalAmount.toFixed(2)}`,
+          title: 'Erro',
+          description: `Saldo insuficiente. Saldo disponível: ${linkedAccount.balance.toFixed(2)}`,
           variant: 'destructive'
         });
+        setIsLoading(false);
         return;
       }
 
-      // Update account balance
-      await supabase.rpc('update_account_balance', {
-        p_account_id: linkedAccount.id,
-        p_amount: totalAmount,
-        p_transaction_type: 'expense'
-      });
-
-      // Update card transactions
-      for (const update of transactionUpdates) {
-        await supabase
-          .from('card_transactions')
-          .update({ paid_installments: update.newPaidInstallments })
-          .eq('id', update.id);
-      }
-
-      // Update card used limit
-      await supabase.rpc('update_card_limit', {
+      // Single atomic RPC call
+      const { data, error } = await supabase.rpc('pay_card_invoice', {
         p_card_id: card.id,
-        p_amount: totalAmount,
-        p_operation: 'subtract'
+        p_account_id: linkedAccount.id,
+        p_installments_to_pay: numInstallments,
+        p_transaction_updates: transactionUpdates
       });
 
-      toast({
-        title: 'Sucesso',
-        description: `${numInstallments} parcela(s) paga(s). Total: ${totalAmount.toFixed(2)}`
-      });
+      if (error) throw error;
 
-      // Invalidate queries to update UI
+      const result = data as { success: boolean; total_amount: number; installments_paid: number };
+
+      // Invalidate queries to refresh data
       queryClient.invalidateQueries({ queryKey: ['cards'] });
       queryClient.invalidateQueries({ queryKey: ['card_transactions'] });
       queryClient.invalidateQueries({ queryKey: ['accounts'] });
 
+      toast({
+        title: 'Sucesso',
+        description: `${result.installments_paid} parcela(s) paga(s). Total: ${result.total_amount.toFixed(2)}`
+      });
+
       onOpenChange(false);
-    } catch (error) {
+      setInstallmentsToPay('1');
+    } catch (error: any) {
+      console.error('Error paying invoice:', error);
       toast({
         title: 'Erro',
-        description: 'Erro ao pagar fatura',
+        description: 'Erro ao pagar fatura. Nenhuma alteração foi realizada.',
         variant: 'destructive'
       });
     } finally {
@@ -176,7 +192,8 @@ export function PayInvoiceDialog({ open, onOpenChange, card }: PayInvoiceDialogP
               id="installments"
               type="number"
               min="1"
-              max={totalUnpaidInstallments}
+              max={Math.min(totalUnpaidInstallments, 1000)}
+              step="1"
               value={installmentsToPay}
               onChange={(e) => setInstallmentsToPay(e.target.value)}
               required

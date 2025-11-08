@@ -360,6 +360,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      pay_card_invoice: {
+        Args: {
+          p_account_id: string
+          p_card_id: string
+          p_installments_to_pay: number
+          p_transaction_updates: Json
+        }
+        Returns: Json
+      }
       update_account_balance: {
         Args: {
           p_account_id: string

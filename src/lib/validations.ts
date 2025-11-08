@@ -172,3 +172,26 @@ export const cardTransactionSchema = z.object({
     .min(1, 'Mínimo de 1 parcela')
     .max(48, 'Máximo de 48 parcelas'),
 });
+
+// Asset Transaction validations
+export const assetTransactionSchema = z.object({
+  assetId: z.string().uuid('ID do ativo inválido'),
+  type: z.enum(['buy', 'sell']),
+  price: z.number()
+    .positive('O preço deve ser positivo')
+    .finite('O preço deve ser um número válido')
+    .max(1000000000, 'Preço muito alto'),
+  quantity: z.number()
+    .positive('A quantidade deve ser positiva')
+    .finite('A quantidade deve ser um número válido')
+    .max(1000000000, 'Quantidade muito alta')
+});
+
+// Pay Invoice validations
+export const payInvoiceSchema = z.object({
+  installments: z.number()
+    .int('Número de parcelas deve ser inteiro')
+    .positive('Número de parcelas deve ser positivo')
+    .min(1, 'Mínimo de 1 parcela')
+    .max(1000, 'Número de parcelas muito alto')
+});
