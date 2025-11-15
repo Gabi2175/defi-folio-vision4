@@ -24,10 +24,11 @@ interface Category {
   color?: string;
 }
 
-interface Account {
+interface SimpleAccount {
   id: string;
   name: string;
   balance: number;
+  currency: string;
 }
 
 interface Transaction {
@@ -48,7 +49,7 @@ const Expenses = () => {
   const { toast } = useToast();
 
   const [categories, setCategories] = useState<Category[]>([]);
-  const [accounts, setAccounts] = useState<Account[]>([]);
+  const [accounts, setAccounts] = useState<SimpleAccount[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
   const [transactionDialogOpen, setTransactionDialogOpen] = useState(false);
@@ -83,7 +84,7 @@ const Expenses = () => {
   const loadAccounts = async () => {
     const { data, error } = await supabase
       .from('accounts')
-      .select('id, name, balance')
+      .select('id, name, balance, currency')
       .order('name');
     if (!error && data) setAccounts(data);
   };
@@ -138,7 +139,7 @@ const Expenses = () => {
       return;
     }
     
-    const amount = parseFloat(transactionForm.amount);
+    let amount = parseFloat(transactionForm.amount);
     
     // Validate input
     const validation = transactionSchema.safeParse({
@@ -157,6 +158,25 @@ const Expenses = () => {
         variant: 'destructive' 
       });
       return;
+    }
+
+    // Get the selected account to check its currency
+    const selectedAccount = accounts.find(acc => acc.id === transactionForm.accountId);
+    if (!selectedAccount) {
+      toast({ title: 'Erro', description: 'Conta não encontrada.', variant: 'destructive' });
+      return;
+    }
+
+    // Convert amount if currencies don't match
+    const { convertValue, exchangeRate } = useCurrency.getState();
+    if (transactionForm.currency !== selectedAccount.currency) {
+      if (transactionForm.currency === 'BRL' && selectedAccount.currency === 'USD') {
+        // User entered BRL, account is USD, so convert BRL to USD
+        amount = amount / exchangeRate;
+      } else if (transactionForm.currency === 'USD' && selectedAccount.currency === 'BRL') {
+        // User entered USD, account is BRL, so convert USD to BRL
+        amount = amount * exchangeRate;
+      }
     }
 
     const { error: transError } = await supabase

@@ -169,7 +169,36 @@ const Accounts = () => {
   const handleTransactionSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const amount = parseFloat(transactionForm.amount);
+    let amount = parseFloat(transactionForm.amount);
+
+    // For transfers, validate both accounts are selected
+    if (transactionForm.type === 'transfer' && !transactionForm.toAccountId) {
+      toast({
+        title: 'Erro',
+        description: 'Por favor, selecione a conta de destino.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Get the selected account to check its currency
+    const selectedAccount = accounts.find(acc => acc.id === transactionForm.accountId);
+    if (!selectedAccount) {
+      toast({ title: 'Erro', description: 'Conta não encontrada.', variant: 'destructive' });
+      return;
+    }
+
+    // Convert amount if currencies don't match
+    const { exchangeRate } = useCurrency.getState();
+    if (transactionForm.currency !== selectedAccount.currency) {
+      if (transactionForm.currency === 'BRL' && selectedAccount.currency === 'USD') {
+        // User entered BRL, account is USD, so convert BRL to USD
+        amount = amount / exchangeRate;
+      } else if (transactionForm.currency === 'USD' && selectedAccount.currency === 'BRL') {
+        // User entered USD, account is BRL, so convert USD to BRL
+        amount = amount * exchangeRate;
+      }
+    }
     
     const { error } = await supabase
       .from('transactions')
@@ -190,6 +219,56 @@ const Accounts = () => {
         variant: 'destructive',
       });
       return;
+    }
+
+    // Update account balances
+    if (transactionForm.type === 'transfer') {
+      // For transfers, deduct from source account and add to destination
+      const { error: sourceError } = await supabase.rpc('update_account_balance', {
+        p_account_id: transactionForm.accountId,
+        p_amount: amount,
+        p_transaction_type: 'transfer_from'
+      });
+
+      if (sourceError) {
+        console.error('Update source balance error:', sourceError);
+        toast({ 
+          title: 'Aviso', 
+          description: 'Transação criada, mas houve um erro ao atualizar o saldo da conta de origem.', 
+          variant: 'destructive' 
+        });
+      }
+
+      const { error: destError } = await supabase.rpc('update_account_balance', {
+        p_account_id: transactionForm.toAccountId,
+        p_amount: amount,
+        p_transaction_type: 'transfer_to'
+      });
+
+      if (destError) {
+        console.error('Update destination balance error:', destError);
+        toast({ 
+          title: 'Aviso', 
+          description: 'Transação criada, mas houve um erro ao atualizar o saldo da conta de destino.', 
+          variant: 'destructive' 
+        });
+      }
+    } else {
+      // For income/expense, update the account balance
+      const { error: balanceError } = await supabase.rpc('update_account_balance', {
+        p_account_id: transactionForm.accountId,
+        p_amount: amount,
+        p_transaction_type: transactionForm.type
+      });
+
+      if (balanceError) {
+        console.error('Update balance error:', balanceError);
+        toast({ 
+          title: 'Aviso', 
+          description: 'Transação criada, mas houve um erro ao atualizar o saldo.', 
+          variant: 'destructive' 
+        });
+      }
     }
     
     loadTransactions();
