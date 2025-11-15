@@ -3,13 +3,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, X } from 'lucide-react';
 import { usePools } from '@/hooks/usePools';
 import { useAssets } from '@/hooks/useAssets';
 import { useCurrency } from '@/hooks/useCurrency';
 import { LiquidityPool } from '@/types/finance';
 import { calculatePoolPNL, formatDate } from '@/lib/calculations';
 import { useToast } from '@/hooks/use-toast';
+import { ClosePoolDialog } from '@/components/ClosePoolDialog';
 import {
   Dialog,
   DialogContent,
@@ -38,6 +39,7 @@ const Pools = () => {
   const { assets } = useAssets();
   const { formatCurrency } = useCurrency();
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [closePoolDialogOpen, setClosePoolDialogOpen] = useState(false);
   const [editingPool, setEditingPool] = useState<LiquidityPool | null>(null);
   const { toast } = useToast();
 
@@ -215,16 +217,21 @@ const Pools = () => {
           <h1 className="text-4xl font-bold text-foreground mb-2">Pools de Liquidez</h1>
           <p className="text-muted-foreground">Gerencie suas pools e acompanhe o desempenho</p>
         </div>
-        <Dialog open={dialogOpen} onOpenChange={(open) => {
-          setDialogOpen(open);
-          if (!open) resetForm();
-        }}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              Adicionar Pool
-            </Button>
-          </DialogTrigger>
+        <div className="flex gap-2">
+          <Button onClick={() => setClosePoolDialogOpen(true)} variant="outline">
+            <X className="mr-2 h-4 w-4" />
+            Fechar Pool
+          </Button>
+          <Dialog open={dialogOpen} onOpenChange={(open) => {
+            setDialogOpen(open);
+            if (!open) resetForm();
+          }}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="mr-2 h-4 w-4" />
+                Adicionar Pool
+              </Button>
+            </DialogTrigger>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
@@ -415,6 +422,13 @@ const Pools = () => {
           </DialogContent>
         </Dialog>
       </div>
+      </div>
+
+      <ClosePoolDialog 
+        open={closePoolDialogOpen} 
+        onOpenChange={setClosePoolDialogOpen} 
+        pools={pools} 
+      />
 
       {/* Summary Cards */}
       <div className="grid gap-6 md:grid-cols-4">
