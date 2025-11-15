@@ -70,6 +70,7 @@ const Accounts = () => {
     description: '',
     date: new Date().toISOString().split('T')[0],
     toAccountId: '',
+    currency: 'USD' as 'USD' | 'BRL'
   });
 
   const resetAccountForm = () => {
@@ -92,6 +93,7 @@ const Accounts = () => {
       description: '',
       date: new Date().toISOString().split('T')[0],
       toAccountId: '',
+      currency: 'USD'
     });
   };
 
@@ -439,6 +441,23 @@ const Accounts = () => {
                       required
                     />
                   </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="currency">Moeda</Label>
+                  <Select
+                    value={transactionForm.currency}
+                    onValueChange={(value: 'USD' | 'BRL') =>
+                      setTransactionForm({ ...transactionForm, currency: value })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="USD">USD (Dólar)</SelectItem>
+                      <SelectItem value="BRL">BRL (Real)</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="category">Categoria</Label>

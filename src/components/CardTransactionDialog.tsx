@@ -24,12 +24,13 @@ export function CardTransactionDialog({ open, onOpenChange }: CardTransactionDia
     cardId: '',
     description: '',
     totalAmount: '',
-    installments: '1'
+    installments: '1',
+    currency: 'USD' as 'USD' | 'BRL'
   });
 
   useEffect(() => {
     if (!open) {
-      setFormData({ cardId: '', description: '', totalAmount: '', installments: '1' });
+      setFormData({ cardId: '', description: '', totalAmount: '', installments: '1', currency: 'USD' });
     }
   }, [open]);
 
@@ -54,7 +55,8 @@ export function CardTransactionDialog({ open, onOpenChange }: CardTransactionDia
         cardId: formData.cardId,
         description: formData.description,
         totalAmount,
-        installments
+        installments,
+        currency: formData.currency
       });
 
       if (!validation.success) {
@@ -163,6 +165,22 @@ export function CardTransactionDialog({ open, onOpenChange }: CardTransactionDia
               placeholder="0.00"
               required
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="currency">Moeda</Label>
+            <Select
+              value={formData.currency}
+              onValueChange={(value: 'USD' | 'BRL') => setFormData({ ...formData, currency: value })}
+            >
+              <SelectTrigger id="currency">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="USD">USD (Dólar)</SelectItem>
+                <SelectItem value="BRL">BRL (Real)</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-2">
