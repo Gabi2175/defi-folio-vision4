@@ -7,7 +7,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Asset } from '@/types/finance';
 import { useToast } from '@/hooks/use-toast';
 import { useAssets } from '@/hooks/useAssets';
+import { useAccounts } from '@/hooks/useAccounts';
 import { assetTransactionSchema } from '@/lib/validations';
+import { supabase } from '@/integrations/supabase/client';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface AssetTransactionDialogProps {
   open: boolean;
@@ -18,11 +21,14 @@ interface AssetTransactionDialogProps {
 export const AssetTransactionDialog = ({ open, onOpenChange, assets }: AssetTransactionDialogProps) => {
   const { toast } = useToast();
   const { updateAsset } = useAssets();
+  const { accounts } = useAccounts();
+  const queryClient = useQueryClient();
   const [transactionForm, setTransactionForm] = useState({
     assetId: '',
     type: 'buy' as 'buy' | 'sell',
     price: '',
     quantity: '',
+    accountId: '',
   });
 
   const resetForm = () => {
@@ -31,6 +37,7 @@ export const AssetTransactionDialog = ({ open, onOpenChange, assets }: AssetTran
       type: 'buy',
       price: '',
       quantity: '',
+      accountId: '',
     });
   };
 
@@ -87,6 +94,15 @@ export const AssetTransactionDialog = ({ open, onOpenChange, assets }: AssetTran
         });
         return;
       }
+
+      if (!transactionForm.accountId) {
+        toast({
+          title: 'Erro',
+          description: 'Selecione uma conta para receber o valor da venda.',
+          variant: 'destructive',
+        });
+        return;
+      }
     }
 
     // Proceed with calculations (now safe from NaN)
@@ -108,11 +124,36 @@ export const AssetTransactionDialog = ({ open, onOpenChange, assets }: AssetTran
       currentPrice: price,
     };
 
+    // If selling, update account balance first
+    if (transactionForm.type === 'sell') {
+      const saleAmount = price * quantity;
+      const { error: accountError } = await supabase.rpc('update_account_balance', {
+        p_account_id: transactionForm.accountId,
+        p_amount: saleAmount,
+        p_transaction_type: 'income'
+      });
+
+      if (accountError) {
+        toast({
+          title: 'Erro',
+          description: 'Erro ao atualizar o saldo da conta.',
+          variant: 'destructive',
+        });
+        return;
+      }
+    }
+
     updateAsset.mutate(updatedAsset, {
       onSuccess: () => {
+        // Invalidate accounts if it was a sell
+        if (transactionForm.type === 'sell') {
+          queryClient.invalidateQueries({ queryKey: ['accounts'] });
+        }
         toast({
           title: `${transactionForm.type === 'buy' ? 'Compra' : 'Venda'} registrada`,
-          description: `Transação de ${quantity} ${selectedAsset.symbol} registrada com sucesso.`,
+          description: transactionForm.type === 'sell' 
+            ? `Venda de ${quantity} ${selectedAsset.symbol} registrada. Valor depositado na conta.`
+            : `Compra de ${quantity} ${selectedAsset.symbol} registrada com sucesso.`,
         });
         onOpenChange(false);
         resetForm();
@@ -123,7 +164,7 @@ export const AssetTransactionDialog = ({ open, onOpenChange, assets }: AssetTran
           description: 'Ocorreu um erro ao registrar a transação.',
           variant: 'destructive',
         });
-      }
+      },
     });
   };
 
@@ -170,6 +211,26 @@ export const AssetTransactionDialog = ({ open, onOpenChange, assets }: AssetTran
               </SelectContent>
             </Select>
           </div>
+          {transactionForm.type === 'sell' && (
+            <div className="space-y-2">
+              <Label htmlFor="accountId">Conta de Destino *</Label>
+              <Select
+                value={transactionForm.accountId}
+                onValueChange={(value) => setTransactionForm({ ...transactionForm, accountId: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione uma conta" />
+                </SelectTrigger>
+                <SelectContent>
+                  {accounts.filter(a => a.isActive).map((account) => (
+                    <SelectItem key={account.id} value={account.id}>
+                      {account.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="price">Preço</Label>
