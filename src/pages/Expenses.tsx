@@ -60,7 +60,8 @@ const Expenses = () => {
     description: '',
     date: new Date().toISOString().split('T')[0],
     accountId: '',
-    categoryId: ''
+    categoryId: '',
+    currency: 'USD' as 'USD' | 'BRL'
   });
 
   useEffect(() => {
@@ -201,7 +202,8 @@ const Expenses = () => {
       description: '',
       date: new Date().toISOString().split('T')[0],
       accountId: '',
-      categoryId: ''
+      categoryId: '',
+      currency: 'USD'
     });
     loadTransactions();
     loadAccounts();
@@ -350,6 +352,18 @@ const Expenses = () => {
                     onChange={(e) => setTransactionForm({ ...transactionForm, amount: e.target.value })}
                     required
                   />
+                </div>
+                <div className="space-y-2">
+                  <Label>Moeda</Label>
+                  <Select value={transactionForm.currency} onValueChange={(value: 'USD' | 'BRL') => setTransactionForm({ ...transactionForm, currency: value })}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="USD">USD (Dólar)</SelectItem>
+                      <SelectItem value="BRL">BRL (Real)</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-2">
                   <Label>Descrição</Label>

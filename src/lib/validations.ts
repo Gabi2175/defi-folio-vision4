@@ -31,6 +31,7 @@ export const transactionSchema = z.object({
   accountId: z.string().uuid('ID da conta inválido'),
   categoryId: z.string().uuid('ID da categoria inválido').optional(),
   toAccountId: z.string().uuid('ID da conta destino inválido').optional(),
+  currency: z.enum(['USD', 'BRL']).default('USD')
 });
 
 // Category validations
@@ -154,6 +155,7 @@ export const cardSchema = z.object({
     .positive('Limite deve ser positivo')
     .max(1000000000, 'Limite muito alto'),
   accountId: z.string().uuid('Selecione uma conta válida'),
+  currency: z.enum(['USD', 'BRL']).default('USD')
 });
 
 // Card Transaction validations
@@ -171,6 +173,7 @@ export const cardTransactionSchema = z.object({
     .positive('Número de parcelas deve ser positivo')
     .min(1, 'Mínimo de 1 parcela')
     .max(48, 'Máximo de 48 parcelas'),
+  currency: z.enum(['USD', 'BRL']).default('USD')
 });
 
 // Asset Transaction validations
@@ -184,7 +187,8 @@ export const assetTransactionSchema = z.object({
   quantity: z.number()
     .positive('A quantidade deve ser positiva')
     .finite('A quantidade deve ser um número válido')
-    .max(1000000000, 'Quantidade muito alta')
+    .max(1000000000, 'Quantidade muito alta'),
+  currency: z.enum(['USD', 'BRL']).default('USD')
 });
 
 // Pay Invoice validations

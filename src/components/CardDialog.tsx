@@ -25,7 +25,8 @@ export function CardDialog({ open, onOpenChange, card }: CardDialogProps) {
   const [formData, setFormData] = useState({
     name: '',
     creditLimit: '',
-    accountId: ''
+    accountId: '',
+    currency: 'USD' as 'USD' | 'BRL'
   });
 
   useEffect(() => {
@@ -33,10 +34,11 @@ export function CardDialog({ open, onOpenChange, card }: CardDialogProps) {
       setFormData({
         name: card.name,
         creditLimit: card.creditLimit.toString(),
-        accountId: card.accountId
+        accountId: card.accountId,
+        currency: 'USD'
       });
     } else {
-      setFormData({ name: '', creditLimit: '', accountId: '' });
+      setFormData({ name: '', creditLimit: '', accountId: '', currency: 'USD' });
     }
   }, [card, open]);
 
@@ -59,7 +61,8 @@ export function CardDialog({ open, onOpenChange, card }: CardDialogProps) {
       const validation = cardSchema.safeParse({
         name: formData.name,
         creditLimit,
-        accountId: formData.accountId
+        accountId: formData.accountId,
+        currency: formData.currency
       });
 
       if (!validation.success) {
@@ -137,6 +140,22 @@ export function CardDialog({ open, onOpenChange, card }: CardDialogProps) {
               placeholder="0.00"
               required
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="currency">Moeda</Label>
+            <Select
+              value={formData.currency}
+              onValueChange={(value: 'USD' | 'BRL') => setFormData({ ...formData, currency: value })}
+            >
+              <SelectTrigger id="currency">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="USD">USD (Dólar)</SelectItem>
+                <SelectItem value="BRL">BRL (Real)</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-2">
