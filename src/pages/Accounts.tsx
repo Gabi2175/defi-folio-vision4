@@ -47,7 +47,7 @@ interface Transaction {
 const Accounts = () => {
   const { user } = useAuth();
   const { accounts, createAccount, updateAccount, deleteAccount } = useAccounts();
-  const { formatCurrency } = useCurrency();
+  const { formatCurrency, exchangeRate } = useCurrency();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [accountDialogOpen, setAccountDialogOpen] = useState(false);
   const [transactionDialogOpen, setTransactionDialogOpen] = useState(false);
@@ -58,7 +58,7 @@ const Accounts = () => {
     name: '',
     type: 'bank' as 'bank' | 'investment' | 'crypto' | 'other',
     balance: '',
-    currency: 'USD',
+    currency: 'USD' as 'USD' | 'BRL',
     notes: '',
   });
 
@@ -78,7 +78,7 @@ const Accounts = () => {
       name: '',
       type: 'bank',
       balance: '',
-      currency: 'USD',
+      currency: 'USD' as 'USD' | 'BRL',
       notes: '',
     });
     setEditingAccount(null);
@@ -118,10 +118,17 @@ const Accounts = () => {
   const handleAccountSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    const balanceInput = parseFloat(accountForm.balance);
+    
+    // Convert balance to USD if entered in BRL (system stores in USD)
+    const balance = accountForm.currency === 'BRL' 
+      ? balanceInput / exchangeRate 
+      : balanceInput;
+    
     const accountData = {
       name: accountForm.name,
       type: accountForm.type,
-      balance: parseFloat(accountForm.balance),
+      balance,
       currency: accountForm.currency,
       notes: accountForm.notes || undefined,
       isActive: true,
@@ -287,7 +294,7 @@ const Accounts = () => {
       name: account.name,
       type: account.type,
       balance: account.balance.toString(),
-      currency: account.currency,
+      currency: (account.currency === 'USD' || account.currency === 'BRL') ? account.currency : 'USD',
       notes: account.notes || '',
     });
     setAccountDialogOpen(true);
@@ -398,12 +405,20 @@ const Accounts = () => {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="currency">Moeda</Label>
-                    <Input
-                      id="currency"
+                    <Select
                       value={accountForm.currency}
-                      onChange={(e) => setAccountForm({ ...accountForm, currency: e.target.value })}
-                      required
-                    />
+                      onValueChange={(value: 'USD' | 'BRL') =>
+                        setAccountForm({ ...accountForm, currency: value })
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="USD">USD (Dólar)</SelectItem>
+                        <SelectItem value="BRL">BRL (Real)</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
                 <div className="space-y-2">

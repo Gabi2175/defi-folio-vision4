@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { useCards } from '@/hooks/useCards';
 import { useAccounts } from '@/hooks/useAccounts';
+import { useCurrency } from '@/hooks/useCurrency';
 import { Card } from '@/types/finance';
 import { cardSchema } from '@/lib/validations';
 
@@ -20,6 +21,7 @@ export function CardDialog({ open, onOpenChange, card }: CardDialogProps) {
   const { toast } = useToast();
   const { createCard, updateCard } = useCards();
   const { accounts } = useAccounts();
+  const { exchangeRate } = useCurrency();
   const [isLoading, setIsLoading] = useState(false);
   
   const [formData, setFormData] = useState({
@@ -47,9 +49,9 @@ export function CardDialog({ open, onOpenChange, card }: CardDialogProps) {
     setIsLoading(true);
 
     try {
-      const creditLimit = parseFloat(formData.creditLimit);
+      const creditLimitInput = parseFloat(formData.creditLimit);
 
-      if (isNaN(creditLimit) || !isFinite(creditLimit)) {
+      if (isNaN(creditLimitInput) || !isFinite(creditLimitInput)) {
         toast({
           title: 'Erro',
           description: 'Limite inválido',
@@ -60,7 +62,7 @@ export function CardDialog({ open, onOpenChange, card }: CardDialogProps) {
 
       const validation = cardSchema.safeParse({
         name: formData.name,
-        creditLimit,
+        creditLimit: creditLimitInput,
         accountId: formData.accountId,
         currency: formData.currency
       });
@@ -73,6 +75,11 @@ export function CardDialog({ open, onOpenChange, card }: CardDialogProps) {
         });
         return;
       }
+
+      // Convert to USD for storage if currency is BRL
+      const creditLimit = formData.currency === 'BRL' 
+        ? creditLimitInput / exchangeRate 
+        : creditLimitInput;
 
       if (card) {
         await updateCard.mutateAsync({
