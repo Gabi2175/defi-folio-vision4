@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -33,6 +33,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  Tooltip,
+} from 'recharts';
 
 const Pools = () => {
   const { pools, createPool, updatePool, deletePool } = usePools();
@@ -209,6 +216,26 @@ const Pools = () => {
   const totalInvested = pools.reduce((sum, pool) => sum + pool.initialInvestment, 0);
   const totalFees = pools.reduce((sum, pool) => sum + pool.feesGenerated, 0);
   const totalPNL = totalPools - totalInvested;
+
+  const CHART_COLORS = [
+    'hsl(var(--chart-1))',
+    'hsl(var(--chart-2))',
+    'hsl(var(--chart-3))',
+    'hsl(var(--chart-4))',
+    'hsl(var(--chart-5))',
+  ];
+
+  const poolDistributionData = useMemo(() => {
+    if (totalPools === 0) return [];
+    return pools.map((pool, index) => {
+      const pnl = calculatePoolPNL(pool);
+      return {
+        name: pool.pairName,
+        value: pnl.totalValue,
+        color: CHART_COLORS[index % CHART_COLORS.length],
+      };
+    });
+  }, [pools, totalPools]);
 
   return (
     <div className="space-y-6">
@@ -478,6 +505,43 @@ const Pools = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Pool Distribution Chart */}
+      {pools.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Distribuição de Pools</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={poolDistributionData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(1)}%`}
+                  outerRadius={100}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {poolDistributionData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: 'hsl(var(--card))',
+                    border: '1px solid hsl(var(--border))',
+                    borderRadius: '8px',
+                  }}
+                  formatter={(value: number) => formatCurrency(value)}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Pools Table */}
       <Card>
