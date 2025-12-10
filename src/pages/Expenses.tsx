@@ -39,13 +39,13 @@ interface Transaction {
   date: string;
   account_id: string;
   category_id?: string;
-  accounts?: { name: string };
+  accounts?: { name: string; currency: string };
   categories?: { name: string; color?: string };
 }
 
 const Expenses = () => {
   const { user } = useAuth();
-  const { formatCurrency } = useCurrency();
+  const { formatCurrency, currency: viewingCurrency, exchangeRate } = useCurrency();
   const { toast } = useToast();
 
   const [categories, setCategories] = useState<Category[]>([]);
@@ -94,7 +94,7 @@ const Expenses = () => {
       .from('transactions')
       .select(`
         *,
-        accounts!transactions_account_id_fkey(name),
+        accounts!transactions_account_id_fkey(name, currency),
         categories(name, color)
       `)
       .in('type', ['income', 'expense'])
@@ -229,13 +229,28 @@ const Expenses = () => {
     loadAccounts();
   };
 
+  // Helper to convert transaction amount to viewing currency
+  const convertTransactionAmount = (t: Transaction) => {
+    const accountCurrency = (t.accounts?.currency as 'USD' | 'BRL') || 'USD';
+    let amount = Number(t.amount);
+    
+    if (accountCurrency !== viewingCurrency) {
+      if (accountCurrency === 'USD' && viewingCurrency === 'BRL') {
+        amount = amount * exchangeRate;
+      } else if (accountCurrency === 'BRL' && viewingCurrency === 'USD') {
+        amount = amount / exchangeRate;
+      }
+    }
+    return amount;
+  };
+
   const totalIncome = transactions
     .filter(t => t.type === 'income')
-    .reduce((sum, t) => sum + Number(t.amount), 0);
+    .reduce((sum, t) => sum + convertTransactionAmount(t), 0);
 
   const totalExpense = transactions
     .filter(t => t.type === 'expense')
-    .reduce((sum, t) => sum + Number(t.amount), 0);
+    .reduce((sum, t) => sum + convertTransactionAmount(t), 0);
 
   const currentMonth = new Date().getMonth();
   const currentYear = new Date().getFullYear();
@@ -245,14 +260,14 @@ const Expenses = () => {
       const date = new Date(t.date);
       return t.type === 'income' && date.getMonth() === currentMonth && date.getFullYear() === currentYear;
     })
-    .reduce((sum, t) => sum + Number(t.amount), 0);
+    .reduce((sum, t) => sum + convertTransactionAmount(t), 0);
 
   const monthlyExpense = transactions
     .filter(t => {
       const date = new Date(t.date);
       return t.type === 'expense' && date.getMonth() === currentMonth && date.getFullYear() === currentYear;
     })
-    .reduce((sum, t) => sum + Number(t.amount), 0);
+    .reduce((sum, t) => sum + convertTransactionAmount(t), 0);
 
   return (
     <div className="space-y-6">
@@ -416,7 +431,7 @@ const Expenses = () => {
             <TrendingUp className="h-4 w-4 text-success" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-success">{formatCurrency(totalIncome)}</div>
+            <div className="text-2xl font-bold text-success">{formatCurrency(totalIncome, viewingCurrency)}</div>
           </CardContent>
         </Card>
 
@@ -426,7 +441,7 @@ const Expenses = () => {
             <TrendingDown className="h-4 w-4 text-destructive" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-destructive">{formatCurrency(totalExpense)}</div>
+            <div className="text-2xl font-bold text-destructive">{formatCurrency(totalExpense, viewingCurrency)}</div>
           </CardContent>
         </Card>
 
@@ -436,7 +451,7 @@ const Expenses = () => {
             <TrendingUp className="h-4 w-4 text-success" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-success">{formatCurrency(monthlyIncome)}</div>
+            <div className="text-2xl font-bold text-success">{formatCurrency(monthlyIncome, viewingCurrency)}</div>
           </CardContent>
         </Card>
 
@@ -446,7 +461,7 @@ const Expenses = () => {
             <TrendingDown className="h-4 w-4 text-destructive" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-destructive">{formatCurrency(monthlyExpense)}</div>
+            <div className="text-2xl font-bold text-destructive">{formatCurrency(monthlyExpense, viewingCurrency)}</div>
           </CardContent>
         </Card>
       </div>
@@ -495,7 +510,7 @@ const Expenses = () => {
                       <TableCell>{transaction.accounts?.name}</TableCell>
                       <TableCell>{transaction.description}</TableCell>
                       <TableCell className={`text-right font-semibold ${transaction.type === 'income' ? 'text-success' : 'text-destructive'}`}>
-                        {transaction.type === 'income' ? '+' : '-'}{formatCurrency(Number(transaction.amount))}
+                        {transaction.type === 'income' ? '+' : '-'}{formatCurrency(Number(transaction.amount), (transaction.accounts?.currency as 'USD' | 'BRL') || 'USD')}
                       </TableCell>
                     </TableRow>
                   ))}
