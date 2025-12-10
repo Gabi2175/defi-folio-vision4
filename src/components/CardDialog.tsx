@@ -37,7 +37,9 @@ export function CardDialog({ open, onOpenChange, card }: CardDialogProps) {
         name: card.name,
         creditLimit: card.creditLimit.toString(),
         accountId: card.accountId,
-        currency: 'USD'
+        currency: ((card as any).currency === 'USD' || (card as any).currency === 'BRL') 
+          ? (card as any).currency 
+          : 'USD'
       });
     } else {
       setFormData({ name: '', creditLimit: '', accountId: '', currency: 'USD' });
@@ -76,27 +78,18 @@ export function CardDialog({ open, onOpenChange, card }: CardDialogProps) {
         return;
       }
 
-      // Get the linked account to determine its currency
-      const linkedAccount = accounts.find(acc => acc.id === formData.accountId);
-      const accountCurrency = linkedAccount?.currency || 'USD';
-
-      // Convert to account's currency if user entered in a different currency
-      let creditLimit = creditLimitInput;
-      if (formData.currency !== accountCurrency) {
-        if (formData.currency === 'BRL' && accountCurrency === 'USD') {
-          creditLimit = creditLimitInput / exchangeRate;
-        } else if (formData.currency === 'USD' && accountCurrency === 'BRL') {
-          creditLimit = creditLimitInput * exchangeRate;
-        }
-      }
+      // Store the limit in the card's selected currency - NO conversion
+      // The user enters the value in the currency they selected for the card
+      const creditLimit = creditLimitInput;
 
       if (card) {
         await updateCard.mutateAsync({
           ...card,
           name: formData.name,
           creditLimit,
-          accountId: formData.accountId
-        });
+          accountId: formData.accountId,
+          currency: formData.currency
+        } as any);
         toast({
           title: 'Sucesso',
           description: 'Cartão atualizado com sucesso'
@@ -105,7 +98,8 @@ export function CardDialog({ open, onOpenChange, card }: CardDialogProps) {
         await createCard.mutateAsync({
           name: formData.name,
           creditLimit,
-          accountId: formData.accountId
+          accountId: formData.accountId,
+          currency: formData.currency
         });
         toast({
           title: 'Sucesso',

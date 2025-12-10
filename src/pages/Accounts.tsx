@@ -619,7 +619,12 @@ const Accounts = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-3xl font-bold">{formatCurrency(totalBalance)}</div>
+          <div className="text-3xl font-bold">
+            {new Intl.NumberFormat('pt-BR', {
+              style: 'currency',
+              currency: viewingCurrency
+            }).format(totalBalance)}
+          </div>
           <p className="text-sm text-muted-foreground mt-1">
             {accounts.length} conta{accounts.length !== 1 ? 's' : ''}
           </p>
