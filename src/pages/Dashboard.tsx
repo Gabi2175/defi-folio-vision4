@@ -35,6 +35,8 @@ const Dashboard = () => {
   const [selectedAccountId, setSelectedAccountId] = useState<string>('all');
   const [selectedPeriod, setSelectedPeriod] = useState<'week' | 'month' | 'year' | 'all'>('month');
 
+  const { currency: viewingCurrency, exchangeRate } = useCurrency();
+
   const stats = useMemo(() => {
     const totalAssets = assets.reduce(
       (sum, asset) => sum + asset.currentPrice * asset.quantity,
@@ -48,12 +50,22 @@ const Dashboard = () => {
       ? poolsData.reduce((sum, pnl) => sum + pnl.profitLossPercentage, 0) / poolsData.length
       : 0;
 
+    // Calculate total accounts by converting each account's native currency to viewing currency
     const totalAccounts = accounts
       .filter(account => account.isActive)
       .reduce((sum, account) => {
-        // Convert account balance from its native currency to viewing currency (USD base for calculations)
-        const { convertValue } = useCurrency.getState();
-        const convertedBalance = convertValue(account.balance, (account.currency as 'USD' | 'BRL') || 'USD');
+        const accountCurrency = (account.currency as 'USD' | 'BRL') || 'USD';
+        let convertedBalance = account.balance;
+        
+        // Convert from account's native currency to viewing currency
+        if (accountCurrency !== viewingCurrency) {
+          if (accountCurrency === 'USD' && viewingCurrency === 'BRL') {
+            convertedBalance = account.balance * exchangeRate;
+          } else if (accountCurrency === 'BRL' && viewingCurrency === 'USD') {
+            convertedBalance = account.balance / exchangeRate;
+          }
+        }
+        
         return sum + convertedBalance;
       }, 0);
 
@@ -70,7 +82,7 @@ const Dashboard = () => {
       poolsCount: pools.length,
       accountsCount: accounts.filter(a => a.isActive).length,
     };
-  }, [assets, pools, accounts]);
+  }, [assets, pools, accounts, viewingCurrency, exchangeRate]);
 
   const distributionData = [
     { name: 'Ativos', value: stats.totalAssets, color: 'hsl(var(--chart-1))' },
@@ -160,7 +172,7 @@ const Dashboard = () => {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(stats.totalWealth)}</div>
+            <div className="text-2xl font-bold">{formatCurrency(stats.totalWealth, viewingCurrency)}</div>
             <p className="text-xs text-muted-foreground mt-1">Valor consolidado</p>
           </CardContent>
         </Card>
@@ -212,7 +224,7 @@ const Dashboard = () => {
             <Wallet className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(stats.totalAccounts)}</div>
+            <div className="text-2xl font-bold">{formatCurrency(stats.totalAccounts, viewingCurrency)}</div>
             <p className="text-xs text-muted-foreground mt-1">{stats.accountsCount} contas</p>
           </CardContent>
         </Card>

@@ -150,18 +150,18 @@ export default function Cards() {
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Limite Total</span>
-                    <span className="font-medium">{formatCurrency(card.creditLimit)}</span>
+                    <span className="font-medium">{formatCurrency(card.creditLimit, (card as any).currency || 'USD')}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Usado</span>
                     <span className="font-medium text-destructive">
-                      {formatCurrency(card.usedLimit)}
+                      {formatCurrency(card.usedLimit, (card as any).currency || 'USD')}
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Disponível</span>
                     <span className="font-medium text-primary">
-                      {formatCurrency(availableLimit)}
+                      {formatCurrency(availableLimit, (card as any).currency || 'USD')}
                     </span>
                   </div>
                   
