@@ -50,7 +50,12 @@ const Dashboard = () => {
 
     const totalAccounts = accounts
       .filter(account => account.isActive)
-      .reduce((sum, account) => sum + account.balance, 0);
+      .reduce((sum, account) => {
+        // Convert account balance from its native currency to viewing currency (USD base for calculations)
+        const { convertValue } = useCurrency.getState();
+        const convertedBalance = convertValue(account.balance, (account.currency as 'USD' | 'BRL') || 'USD');
+        return sum + convertedBalance;
+      }, 0);
 
     const totalWealth = totalAssets + totalPoolValue + totalAccounts;
 
