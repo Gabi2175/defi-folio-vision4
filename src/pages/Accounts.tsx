@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -46,6 +47,7 @@ interface Transaction {
 
 const Accounts = () => {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const { accounts, createAccount, updateAccount, deleteAccount } = useAccounts();
   const { formatCurrency, exchangeRate } = useCurrency();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -118,12 +120,8 @@ const Accounts = () => {
   const handleAccountSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const balanceInput = parseFloat(accountForm.balance);
-    
-    // Convert balance to USD if entered in BRL (system stores in USD)
-    const balance = accountForm.currency === 'BRL' 
-      ? balanceInput / exchangeRate 
-      : balanceInput;
+    // Store the balance in its native currency (no conversion)
+    const balance = parseFloat(accountForm.balance);
     
     const accountData = {
       name: accountForm.name,
@@ -246,9 +244,22 @@ const Accounts = () => {
         });
       }
 
+      // Calculate amount for destination account (may need conversion if currencies differ)
+      const destAccount = accounts.find(acc => acc.id === transactionForm.toAccountId);
+      let destAmount = amount;
+      if (destAccount && selectedAccount.currency !== destAccount.currency) {
+        if (selectedAccount.currency === 'USD' && destAccount.currency === 'BRL') {
+          // Source is USD, dest is BRL: convert to BRL
+          destAmount = amount * exchangeRate;
+        } else if (selectedAccount.currency === 'BRL' && destAccount.currency === 'USD') {
+          // Source is BRL, dest is USD: convert to USD
+          destAmount = amount / exchangeRate;
+        }
+      }
+
       const { error: destError } = await supabase.rpc('update_account_balance', {
         p_account_id: transactionForm.toAccountId,
-        p_amount: amount,
+        p_amount: destAmount,
         p_transaction_type: 'transfer_to'
       });
 
@@ -279,6 +290,8 @@ const Accounts = () => {
     }
     
     loadTransactions();
+    // Invalidate accounts to refresh balances
+    queryClient.invalidateQueries({ queryKey: ['accounts'] });
     setTransactionDialogOpen(false);
     resetTransactionForm();
     
@@ -334,9 +347,15 @@ const Accounts = () => {
     }
   };
 
+  // Calculate total balance converting each account to the viewing currency
+  const { convertValue, currency: viewingCurrency } = useCurrency();
   const totalBalance = accounts
     .filter(account => account.isActive)
-    .reduce((sum, account) => sum + account.balance, 0);
+    .reduce((sum, account) => {
+      // Convert account balance from its native currency to viewing currency
+      const convertedBalance = convertValue(account.balance, account.currency as 'USD' | 'BRL');
+      return sum + convertedBalance;
+    }, 0);
 
   return (
     <div className="space-y-6">
@@ -638,7 +657,7 @@ const Accounts = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
-                    {formatCurrency(account.balance)}
+                    {formatCurrency(account.balance, account.currency as 'USD' | 'BRL')}
                   </div>
                   <p className="text-xs text-muted-foreground mt-1 capitalize">
                     {account.type} • {account.currency}

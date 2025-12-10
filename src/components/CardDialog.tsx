@@ -76,10 +76,19 @@ export function CardDialog({ open, onOpenChange, card }: CardDialogProps) {
         return;
       }
 
-      // Convert to USD for storage if currency is BRL
-      const creditLimit = formData.currency === 'BRL' 
-        ? creditLimitInput / exchangeRate 
-        : creditLimitInput;
+      // Get the linked account to determine its currency
+      const linkedAccount = accounts.find(acc => acc.id === formData.accountId);
+      const accountCurrency = linkedAccount?.currency || 'USD';
+
+      // Convert to account's currency if user entered in a different currency
+      let creditLimit = creditLimitInput;
+      if (formData.currency !== accountCurrency) {
+        if (formData.currency === 'BRL' && accountCurrency === 'USD') {
+          creditLimit = creditLimitInput / exchangeRate;
+        } else if (formData.currency === 'USD' && accountCurrency === 'BRL') {
+          creditLimit = creditLimitInput * exchangeRate;
+        }
+      }
 
       if (card) {
         await updateCard.mutateAsync({
