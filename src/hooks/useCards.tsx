@@ -28,6 +28,7 @@ export const useCards = () => {
         name: card.name,
         creditLimit: Number(card.credit_limit),
         usedLimit: Number(card.used_limit),
+        currency: (card as any).currency || 'USD',
         createdAt: card.created_at,
         updatedAt: card.updated_at,
         accountName: card.accounts?.name
@@ -37,7 +38,7 @@ export const useCards = () => {
   });
 
   const createCard = useMutation({
-    mutationFn: async (card: Omit<Card, 'id' | 'createdAt' | 'updatedAt' | 'usedLimit'>) => {
+    mutationFn: async (card: Omit<Card, 'id' | 'createdAt' | 'updatedAt' | 'usedLimit'> & { currency?: 'USD' | 'BRL' }) => {
       const { data, error } = await supabase
         .from('cards')
         .insert([{
@@ -45,7 +46,8 @@ export const useCards = () => {
           account_id: card.accountId,
           name: card.name,
           credit_limit: card.creditLimit,
-          used_limit: 0
+          used_limit: 0,
+          currency: card.currency || 'USD'
         }])
         .select()
         .single();
@@ -59,14 +61,15 @@ export const useCards = () => {
   });
 
   const updateCard = useMutation({
-    mutationFn: async (card: Card) => {
+    mutationFn: async (card: Card & { currency?: 'USD' | 'BRL' }) => {
       const { error } = await supabase
         .from('cards')
         .update({
           name: card.name,
           account_id: card.accountId,
           credit_limit: card.creditLimit,
-          used_limit: card.usedLimit
+          used_limit: card.usedLimit,
+          currency: card.currency || 'USD'
         })
         .eq('id', card.id);
       

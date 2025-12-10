@@ -147,6 +147,7 @@ export type Database = {
           account_id: string
           created_at: string
           credit_limit: number
+          currency: string
           id: string
           name: string
           updated_at: string
@@ -157,6 +158,7 @@ export type Database = {
           account_id: string
           created_at?: string
           credit_limit: number
+          currency?: string
           id?: string
           name: string
           updated_at?: string
@@ -167,6 +169,7 @@ export type Database = {
           account_id?: string
           created_at?: string
           credit_limit?: number
+          currency?: string
           id?: string
           name?: string
           updated_at?: string
