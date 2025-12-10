@@ -347,13 +347,25 @@ const Accounts = () => {
     }
   };
 
-  // Calculate total balance converting each account to the viewing currency
-  const { convertValue, currency: viewingCurrency } = useCurrency();
+  // Calculate total balance: sum of all account balances converted to viewing currency
+  const { currency: viewingCurrency, exchangeRate: currentRate } = useCurrency();
   const totalBalance = accounts
     .filter(account => account.isActive)
     .reduce((sum, account) => {
-      // Convert account balance from its native currency to viewing currency
-      const convertedBalance = convertValue(account.balance, account.currency as 'USD' | 'BRL');
+      const accountCurrency = account.currency as 'USD' | 'BRL';
+      let convertedBalance = account.balance;
+      
+      // Only convert if account currency differs from viewing currency
+      if (accountCurrency !== viewingCurrency) {
+        if (accountCurrency === 'USD' && viewingCurrency === 'BRL') {
+          // Account is in USD, viewing in BRL: multiply by rate
+          convertedBalance = account.balance * currentRate;
+        } else if (accountCurrency === 'BRL' && viewingCurrency === 'USD') {
+          // Account is in BRL, viewing in USD: divide by rate
+          convertedBalance = account.balance / currentRate;
+        }
+      }
+      
       return sum + convertedBalance;
     }, 0);
 
