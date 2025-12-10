@@ -8,6 +8,7 @@ import { Asset } from '@/types/finance';
 import { useToast } from '@/hooks/use-toast';
 import { useAssets } from '@/hooks/useAssets';
 import { useAccounts } from '@/hooks/useAccounts';
+import { useCurrency } from '@/hooks/useCurrency';
 import { assetTransactionSchema } from '@/lib/validations';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
@@ -127,9 +128,23 @@ export const AssetTransactionDialog = ({ open, onOpenChange, assets }: AssetTran
     // If selling, update account balance first
     if (transactionForm.type === 'sell') {
       const saleAmount = price * quantity;
+      
+      // Get the destination account to check its currency
+      const selectedAccount = accounts.find(a => a.id === transactionForm.accountId);
+      const accountCurrency = selectedAccount?.currency || 'USD';
+      
+      // Asset prices are in USD. If account is BRL, convert the amount
+      let finalSaleAmount = saleAmount;
+      const { exchangeRate } = useCurrency.getState();
+      
+      if (accountCurrency === 'BRL') {
+        // Convert USD to BRL
+        finalSaleAmount = saleAmount * exchangeRate;
+      }
+      
       const { error: accountError } = await supabase.rpc('update_account_balance', {
         p_account_id: transactionForm.accountId,
-        p_amount: saleAmount,
+        p_amount: finalSaleAmount,
         p_transaction_type: 'income'
       });
 

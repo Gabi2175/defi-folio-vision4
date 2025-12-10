@@ -42,7 +42,7 @@ interface Transaction {
   amount: number;
   description: string;
   date: string;
-  accounts?: { name: string };
+  accounts?: { name: string; currency: string };
 }
 
 const Accounts = () => {
@@ -110,7 +110,7 @@ const Accounts = () => {
       .from('transactions')
       .select(`
         *,
-        accounts!transactions_account_id_fkey(name)
+        accounts!transactions_account_id_fkey(name, currency)
       `)
       .order('date', { ascending: false })
       .limit(50);
@@ -745,7 +745,7 @@ const Accounts = () => {
                                 >
                                   {transaction.type === 'income' && '+'}
                                   {transaction.type === 'expense' && '-'}
-                                  {formatCurrency(transaction.amount)}
+                                  {formatCurrency(transaction.amount, (transaction.accounts?.currency as 'USD' | 'BRL') || 'USD')}
                                 </span>
                               </TableCell>
                             </TableRow>

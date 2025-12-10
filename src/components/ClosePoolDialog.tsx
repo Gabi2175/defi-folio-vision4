@@ -58,14 +58,26 @@ export const ClosePoolDialog = ({ open, onOpenChange, pools }: ClosePoolDialogPr
     setIsProcessing(true);
 
     try {
-      // Calculate total pool value
+      // Calculate total pool value (in USD, as pool prices are in USD)
       const pnl = calculatePoolPNL(selectedPool);
-      const totalValue = pnl.totalValue;
+      const totalValueUSD = pnl.totalValue;
+
+      // Get the destination account to check its currency
+      const selectedAccount = accounts.find(a => a.id === selectedAccountId);
+      const accountCurrency = selectedAccount?.currency || 'USD';
+      
+      // Convert value if account is BRL
+      let finalValue = totalValueUSD;
+      const { exchangeRate } = useCurrency.getState();
+      
+      if (accountCurrency === 'BRL') {
+        finalValue = totalValueUSD * exchangeRate;
+      }
 
       // Add value to selected account
       const { error: accountError } = await supabase.rpc('update_account_balance', {
         p_account_id: selectedAccountId,
-        p_amount: totalValue,
+        p_amount: finalValue,
         p_transaction_type: 'income'
       });
 
@@ -79,7 +91,7 @@ export const ClosePoolDialog = ({ open, onOpenChange, pools }: ClosePoolDialogPr
           queryClient.invalidateQueries({ queryKey: ['accounts'] });
           toast({
             title: 'Pool fechada',
-            description: `Pool fechada com sucesso. ${formatCurrency(totalValue)} depositado na conta.`,
+            description: `Pool fechada com sucesso. ${formatCurrency(finalValue, accountCurrency as 'USD' | 'BRL')} depositado na conta.`,
           });
           onOpenChange(false);
           resetForm();

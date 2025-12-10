@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { useCards } from '@/hooks/useCards';
 import { useCardTransactions } from '@/hooks/useCardTransactions';
+import { useCurrency } from '@/hooks/useCurrency';
 import { cardTransactionSchema } from '@/lib/validations';
 
 interface CardTransactionDialogProps {
@@ -79,11 +80,28 @@ export function CardTransactionDialog({ open, onOpenChange }: CardTransactionDia
         return;
       }
 
+      // Get the card's native currency
+      const cardCurrency = (selectedCard as any).currency || 'USD';
+      
+      // Convert amount if transaction currency differs from card currency
+      let finalAmount = totalAmount;
+      const { exchangeRate } = useCurrency.getState();
+      
+      if (formData.currency !== cardCurrency) {
+        if (formData.currency === 'BRL' && cardCurrency === 'USD') {
+          // User entered BRL, card is USD: convert BRL to USD
+          finalAmount = totalAmount / exchangeRate;
+        } else if (formData.currency === 'USD' && cardCurrency === 'BRL') {
+          // User entered USD, card is BRL: convert USD to BRL
+          finalAmount = totalAmount * exchangeRate;
+        }
+      }
+
       const availableLimit = selectedCard.creditLimit - selectedCard.usedLimit;
-      if (totalAmount > availableLimit) {
+      if (finalAmount > availableLimit) {
         toast({
           title: 'Limite insuficiente',
-          description: `Limite disponível: ${availableLimit.toFixed(2)}. Valor da transação: ${totalAmount.toFixed(2)}`,
+          description: `Limite disponível: ${availableLimit.toFixed(2)} ${cardCurrency}. Valor da transação: ${finalAmount.toFixed(2)} ${cardCurrency}`,
           variant: 'destructive'
         });
         return;
@@ -92,7 +110,7 @@ export function CardTransactionDialog({ open, onOpenChange }: CardTransactionDia
       await createTransaction.mutateAsync({
         cardId: formData.cardId,
         description: formData.description,
-        totalAmount,
+        totalAmount: finalAmount,
         installments,
         transactionDate: new Date().toISOString()
       });
