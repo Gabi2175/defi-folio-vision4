@@ -126,7 +126,7 @@ const Expenses = () => {
       .insert([{ ...categoryForm, user_id: user!.id }]);
 
     if (error) {
-      console.error('Create category error:', error);
+      if (import.meta.env.DEV) console.error('Create category error:', error);
       toast({ title: 'Erro', description: getUserFriendlyError(error), variant: 'destructive' });
     } else {
       toast({ title: 'Categoria criada com sucesso!' });
@@ -197,7 +197,7 @@ const Expenses = () => {
       }]);
 
     if (transError) {
-      console.error('Create transaction error:', transError);
+      if (import.meta.env.DEV) console.error('Create transaction error:', transError);
       toast({ title: 'Erro', description: getUserFriendlyError(transError), variant: 'destructive' });
       return;
     }
@@ -210,7 +210,7 @@ const Expenses = () => {
     });
 
     if (balanceError) {
-      console.error('Update balance error:', balanceError);
+      if (import.meta.env.DEV) console.error('Update balance error:', balanceError);
       toast({ 
         title: 'Aviso', 
         description: 'Transação criada, mas houve um erro ao atualizar o saldo.', 

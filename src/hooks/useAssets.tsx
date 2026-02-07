@@ -17,7 +17,7 @@ export const useAssets = () => {
         .order('created_at', { ascending: false });
       
       if (error) {
-        console.error('Fetch assets error:', error);
+        if (import.meta.env.DEV) console.error('Fetch assets error:', error);
         throw error;
       }
       

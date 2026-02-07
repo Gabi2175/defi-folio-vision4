@@ -49,7 +49,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
 
     if (error) {
-      console.error('Signup error:', error);
+      if (import.meta.env.DEV) console.error('Signup error:', error);
       toast({
         title: 'Erro ao criar conta',
         description: getUserFriendlyError(error),
@@ -72,7 +72,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
 
     if (error) {
-      console.error('Login error:', error);
+      if (import.meta.env.DEV) console.error('Login error:', error);
       toast({
         title: 'Erro ao fazer login',
         description: getUserFriendlyError(error),
@@ -86,7 +86,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signOut = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
-      console.error('Logout error:', error);
+      if (import.meta.env.DEV) console.error('Logout error:', error);
       toast({
         title: 'Erro ao sair',
         description: getUserFriendlyError(error),

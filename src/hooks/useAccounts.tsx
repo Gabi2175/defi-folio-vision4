@@ -17,7 +17,7 @@ export const useAccounts = () => {
         .order('created_at', { ascending: false });
       
       if (error) {
-        console.error('Fetch accounts error:', error);
+        if (import.meta.env.DEV) console.error('Fetch accounts error:', error);
         throw error;
       }
       
