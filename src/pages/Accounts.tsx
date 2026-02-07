@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Plus, Pencil, Trash2, ArrowUpRight, ArrowDownRight, ArrowLeftRight, Eye, EyeOff } from 'lucide-react';
+import { TransactionPeriodFilter, PeriodFilter, filterTransactionsByPeriod } from '@/components/TransactionPeriodFilter';
 import { useAccounts } from '@/hooks/useAccounts';
 import { useCurrency } from '@/hooks/useCurrency';
 import { Account } from '@/types/finance';
@@ -54,7 +55,12 @@ const Accounts = () => {
   const [accountDialogOpen, setAccountDialogOpen] = useState(false);
   const [transactionDialogOpen, setTransactionDialogOpen] = useState(false);
   const [editingAccount, setEditingAccount] = useState<Account | null>(null);
+  const [transactionPeriodFilter, setTransactionPeriodFilter] = useState<PeriodFilter>('month');
   const { toast } = useToast();
+
+  const filteredTransactions = useMemo(() => {
+    return filterTransactionsByPeriod(transactions, transactionPeriodFilter);
+  }, [transactions, transactionPeriodFilter]);
 
   const [accountForm, setAccountForm] = useState({
     name: '',
@@ -690,13 +696,19 @@ const Accounts = () => {
 
         <TabsContent value="transactions">
           <Card>
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0">
               <CardTitle>Histórico de Transações</CardTitle>
+              <TransactionPeriodFilter
+                value={transactionPeriodFilter}
+                onChange={setTransactionPeriodFilter}
+              />
             </CardHeader>
             <CardContent>
-              {transactions.length === 0 ? (
+              {filteredTransactions.length === 0 ? (
                 <div className="text-center py-12 text-muted-foreground">
-                  Nenhuma transação registrada.
+                  {transactions.length === 0 
+                    ? 'Nenhuma transação registrada.'
+                    : 'Nenhuma transação encontrada no período selecionado.'}
                 </div>
               ) : (
                 <div className="overflow-x-auto">
@@ -711,7 +723,7 @@ const Accounts = () => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {transactions
+                      {filteredTransactions
                         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
                         .map((transaction) => {
                           return (

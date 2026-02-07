@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Plus, TrendingDown, TrendingUp, DollarSign } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,6 +16,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { getUserFriendlyError } from '@/lib/errorHandler';
 import { transactionSchema, categorySchema } from '@/lib/validations';
+import { TransactionPeriodFilter, PeriodFilter, filterTransactionsByPeriod } from '@/components/TransactionPeriodFilter';
 
 interface Category {
   id: string;
@@ -53,7 +54,11 @@ const Expenses = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
   const [transactionDialogOpen, setTransactionDialogOpen] = useState(false);
+  const [transactionPeriodFilter, setTransactionPeriodFilter] = useState<PeriodFilter>('month');
 
+  const filteredTransactions = useMemo(() => {
+    return filterTransactionsByPeriod(transactions, transactionPeriodFilter);
+  }, [transactions, transactionPeriodFilter]);
   const [categoryForm, setCategoryForm] = useState({ name: '', type: 'expense' as 'income' | 'expense', color: '#3b82f6' });
   const [transactionForm, setTransactionForm] = useState({
     type: 'expense' as 'income' | 'expense',
@@ -474,9 +479,15 @@ const Expenses = () => {
 
         <TabsContent value="transactions">
           <Card>
-            <CardHeader>
-              <CardTitle>Histórico de Transações</CardTitle>
-              <CardDescription>Todas as suas receitas e despesas</CardDescription>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0">
+              <div>
+                <CardTitle>Histórico de Transações</CardTitle>
+                <CardDescription>Todas as suas receitas e despesas</CardDescription>
+              </div>
+              <TransactionPeriodFilter
+                value={transactionPeriodFilter}
+                onChange={setTransactionPeriodFilter}
+              />
             </CardHeader>
             <CardContent>
               <Table>
@@ -491,7 +502,16 @@ const Expenses = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {transactions.map((transaction) => (
+                  {filteredTransactions.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
+                        {transactions.length === 0 
+                          ? 'Nenhuma transação registrada.'
+                          : 'Nenhuma transação encontrada no período selecionado.'}
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    filteredTransactions.map((transaction) => (
                     <TableRow key={transaction.id}>
                       <TableCell>{format(new Date(transaction.date), 'dd/MM/yyyy', { locale: ptBR })}</TableCell>
                       <TableCell>
@@ -513,7 +533,8 @@ const Expenses = () => {
                         {transaction.type === 'income' ? '+' : '-'}{formatCurrency(Number(transaction.amount), (transaction.accounts?.currency as 'USD' | 'BRL') || 'USD')}
                       </TableCell>
                     </TableRow>
-                  ))}
+                  ))
+                  )}
                 </TableBody>
               </Table>
             </CardContent>
