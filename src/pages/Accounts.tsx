@@ -376,24 +376,24 @@ const Accounts = () => {
     }, 0);
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
         <div>
-          <h1 className="text-4xl font-bold text-foreground mb-2">Contas & Transações</h1>
-          <p className="text-muted-foreground">Gerencie suas contas e registre movimentações</p>
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-1 sm:mb-2">Contas & Transações</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">Gerencie suas contas e registre movimentações</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Dialog open={accountDialogOpen} onOpenChange={(open) => {
             setAccountDialogOpen(open);
             if (!open) resetAccountForm();
           }}>
             <DialogTrigger asChild>
-              <Button variant="outline">
-                <Plus className="mr-2 h-4 w-4" />
-                Nova Conta
+              <Button variant="outline" className="flex-1 sm:flex-none text-xs sm:text-sm">
+                <Plus className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden xs:inline">Nova </span>Conta
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-md">
+            <DialogContent className="max-w-[95vw] sm:max-w-md max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>
                   {editingAccount ? 'Editar Conta' : 'Adicionar Nova Conta'}
@@ -478,12 +478,12 @@ const Accounts = () => {
             if (!open) resetTransactionForm();
           }}>
             <DialogTrigger asChild>
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                Nova Transação
+              <Button className="flex-1 sm:flex-none text-xs sm:text-sm">
+                <Plus className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden xs:inline">Nova </span>Transação
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-md">
+            <DialogContent className="max-w-[95vw] sm:max-w-md max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>Adicionar Nova Transação</DialogTitle>
               </DialogHeader>

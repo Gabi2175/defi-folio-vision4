@@ -92,23 +92,61 @@ export const Layout = ({ children }: LayoutProps) => {
   return (
     <div className="min-h-screen bg-background">
       {/* Mobile Header */}
-      <div className="lg:hidden sticky top-0 z-50 bg-card border-b border-border px-4 py-3">
+      <div className="lg:hidden sticky top-0 z-50 bg-card border-b border-border px-3 py-2 sm:px-4 sm:py-3">
         <div className="flex items-center justify-between">
-          <h1 className="text-xl font-bold text-foreground">FinanceControl</h1>
-          <div className="flex items-center gap-2">
+          <h1 className="text-lg sm:text-xl font-bold text-foreground truncate">FinanceControl</h1>
+          <div className="flex items-center gap-1 sm:gap-2">
             <ThemeToggle />
             <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <Menu className="h-6 w-6" />
+              <Button variant="ghost" size="icon" className="h-9 w-9">
+                <Menu className="h-5 w-5 sm:h-6 sm:w-6" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-64 p-0">
-              <div className="p-6">
-                <h2 className="text-2xl font-bold text-foreground mb-6">Menu</h2>
-                <nav className="space-y-2">
+            <SheetContent side="left" className="w-[280px] sm:w-64 p-0">
+              <div className="p-4 sm:p-6 h-full flex flex-col">
+                <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-4 sm:mb-6">Menu</h2>
+                <nav className="space-y-1 sm:space-y-2 flex-1">
                   <NavLinks />
                 </nav>
+                <div className="pt-4 border-t space-y-3">
+                  <div className="space-y-2">
+                    <label className="text-sm text-muted-foreground flex items-center gap-2">
+                      <DollarSign className="h-4 w-4" />
+                      Moeda
+                    </label>
+                    <Select value={currency} onValueChange={(value: 'USD' | 'BRL') => setCurrency(value)}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="USD">USD ($)</SelectItem>
+                        <SelectItem value="BRL">BRL (R$)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm text-muted-foreground">
+                      Cotação (1 USD = ? BRL)
+                    </label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      min="0.01"
+                      max="10000"
+                      value={exchangeRate}
+                      onChange={handleExchangeRateChange}
+                      onBlur={() => {
+                        if (exchangeRate <= 0) setExchangeRate(5.0);
+                      }}
+                      className="w-full"
+                    />
+                  </div>
+                  <Button variant="outline" className="w-full" onClick={signOut}>
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Sair
+                  </Button>
+                </div>
               </div>
             </SheetContent>
           </Sheet>
@@ -172,7 +210,7 @@ export const Layout = ({ children }: LayoutProps) => {
         </aside>
 
         {/* Main Content */}
-        <main className="p-6 lg:p-8">
+        <main className="p-3 sm:p-4 md:p-6 lg:p-8">
           {children}
         </main>
       </div>

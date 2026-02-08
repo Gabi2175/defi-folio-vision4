@@ -238,28 +238,28 @@ const Pools = () => {
   }, [pools, totalPools]);
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
         <div>
-          <h1 className="text-4xl font-bold text-foreground mb-2">Pools de Liquidez</h1>
-          <p className="text-muted-foreground">Gerencie suas pools e acompanhe o desempenho</p>
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-1 sm:mb-2">Pools de Liquidez</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">Gerencie suas pools e acompanhe o desempenho</p>
         </div>
-        <div className="flex gap-2">
-          <Button onClick={() => setClosePoolDialogOpen(true)} variant="outline">
-            <X className="mr-2 h-4 w-4" />
-            Fechar Pool
+        <div className="flex flex-wrap gap-2">
+          <Button onClick={() => setClosePoolDialogOpen(true)} variant="outline" className="flex-1 sm:flex-none text-xs sm:text-sm">
+            <X className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden xs:inline">Fechar </span>Pool
           </Button>
           <Dialog open={dialogOpen} onOpenChange={(open) => {
             setDialogOpen(open);
             if (!open) resetForm();
           }}>
             <DialogTrigger asChild>
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                Adicionar Pool
+              <Button className="flex-1 sm:flex-none text-xs sm:text-sm">
+                <Plus className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden xs:inline">Adicionar </span>Pool
               </Button>
             </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
                 {editingPool ? 'Editar Pool' : 'Adicionar Nova Pool'}
@@ -458,45 +458,45 @@ const Pools = () => {
       />
 
       {/* Summary Cards */}
-      <div className="grid gap-6 md:grid-cols-4">
+      <div className="grid gap-3 sm:gap-4 lg:gap-6 grid-cols-2 lg:grid-cols-4">
         <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+          <CardHeader className="px-3 sm:px-6 pt-3 sm:pt-6 pb-1 sm:pb-2">
+            <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">
               Valor Total
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(totalPools)}</div>
+          <CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
+            <div className="text-lg sm:text-xl lg:text-2xl font-bold truncate">{formatCurrency(totalPools)}</div>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+          <CardHeader className="px-3 sm:px-6 pt-3 sm:pt-6 pb-1 sm:pb-2">
+            <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">
               Total Investido
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(totalInvested)}</div>
+          <CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
+            <div className="text-lg sm:text-xl lg:text-2xl font-bold truncate">{formatCurrency(totalInvested)}</div>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+          <CardHeader className="px-3 sm:px-6 pt-3 sm:pt-6 pb-1 sm:pb-2">
+            <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">
               Taxas Totais
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(totalFees)}</div>
+          <CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
+            <div className="text-lg sm:text-xl lg:text-2xl font-bold truncate">{formatCurrency(totalFees)}</div>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+          <CardHeader className="px-3 sm:px-6 pt-3 sm:pt-6 pb-1 sm:pb-2">
+            <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">
               PNL Total
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className={`text-2xl font-bold ${totalPNL >= 0 ? 'text-success' : 'text-destructive'}`}>
+          <CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
+            <div className={`text-lg sm:text-xl lg:text-2xl font-bold truncate ${totalPNL >= 0 ? 'text-success' : 'text-destructive'}`}>
               {formatCurrency(totalPNL)}
             </div>
             <p className={`text-sm mt-1 ${totalPNL >= 0 ? 'text-success' : 'text-destructive'}`}>
