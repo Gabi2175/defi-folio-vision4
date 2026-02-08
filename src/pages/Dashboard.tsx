@@ -156,57 +156,57 @@ const Dashboard = () => {
   }, [transactions, selectedAccountId, selectedPeriod]);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4 sm:space-y-6 lg:space-y-8">
       <div>
-        <h1 className="text-4xl font-bold text-foreground mb-2">Dashboard</h1>
-        <p className="text-muted-foreground">Visão geral do seu patrimônio financeiro</p>
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-1 sm:mb-2">Dashboard</h1>
+        <p className="text-sm sm:text-base text-muted-foreground">Visão geral do seu patrimônio financeiro</p>
       </div>
 
       {/* Main Stats */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 sm:gap-4 lg:gap-6 grid-cols-2 lg:grid-cols-4">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+          <CardHeader className="flex flex-row items-center justify-between pb-1 sm:pb-2 px-3 sm:px-6 pt-3 sm:pt-6">
+            <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">
               Patrimônio Total
             </CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(stats.totalWealth, viewingCurrency)}</div>
-            <p className="text-xs text-muted-foreground mt-1">Valor consolidado</p>
+          <CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
+            <div className="text-lg sm:text-xl lg:text-2xl font-bold truncate">{formatCurrency(stats.totalWealth, viewingCurrency)}</div>
+            <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">Valor consolidado</p>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+          <CardHeader className="flex flex-row items-center justify-between pb-1 sm:pb-2 px-3 sm:px-6 pt-3 sm:pt-6">
+            <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">
               Ativos
             </CardTitle>
-            <Coins className="h-4 w-4 text-muted-foreground" />
+            <Coins className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(stats.totalAssets)}</div>
-            <p className="text-xs text-muted-foreground mt-1">{stats.assetsCount} ativos</p>
+          <CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
+            <div className="text-lg sm:text-xl lg:text-2xl font-bold truncate">{formatCurrency(stats.totalAssets)}</div>
+            <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">{stats.assetsCount} ativos</p>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+          <CardHeader className="flex flex-row items-center justify-between pb-1 sm:pb-2 px-3 sm:px-6 pt-3 sm:pt-6">
+            <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground truncate">
               Pools de Liquidez
             </CardTitle>
-            <Droplets className="h-4 w-4 text-muted-foreground" />
+            <Droplets className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(stats.totalPoolValue)}</div>
+          <CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
+            <div className="text-lg sm:text-xl lg:text-2xl font-bold truncate">{formatCurrency(stats.totalPoolValue)}</div>
             <div className="flex items-center mt-1">
               {stats.avgPoolPNLPercentage >= 0 ? (
-                <ArrowUpRight className="h-4 w-4 text-success mr-1" />
+                <ArrowUpRight className="h-3 w-3 sm:h-4 sm:w-4 text-success mr-1" />
               ) : (
-                <ArrowDownRight className="h-4 w-4 text-destructive mr-1" />
+                <ArrowDownRight className="h-3 w-3 sm:h-4 sm:w-4 text-destructive mr-1" />
               )}
               <span
-                className={`text-xs font-medium ${
+                className={`text-[10px] sm:text-xs font-medium ${
                   stats.avgPoolPNLPercentage >= 0 ? 'text-success' : 'text-destructive'
                 }`}
               >
@@ -217,27 +217,27 @@ const Dashboard = () => {
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+          <CardHeader className="flex flex-row items-center justify-between pb-1 sm:pb-2 px-3 sm:px-6 pt-3 sm:pt-6">
+            <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">
               Contas
             </CardTitle>
-            <Wallet className="h-4 w-4 text-muted-foreground" />
+            <Wallet className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(stats.totalAccounts, viewingCurrency)}</div>
-            <p className="text-xs text-muted-foreground mt-1">{stats.accountsCount} contas</p>
+          <CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
+            <div className="text-lg sm:text-xl lg:text-2xl font-bold truncate">{formatCurrency(stats.totalAccounts, viewingCurrency)}</div>
+            <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">{stats.accountsCount} contas</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Charts */}
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
         <Card>
-          <CardHeader>
-            <CardTitle>Evolução do Patrimônio</CardTitle>
+          <CardHeader className="px-3 sm:px-6 pt-3 sm:pt-6 pb-2 sm:pb-4">
+            <CardTitle className="text-base sm:text-lg">Evolução do Patrimônio</CardTitle>
           </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
+          <CardContent className="px-2 sm:px-6 pb-3 sm:pb-6">
+            <ResponsiveContainer width="100%" height={250} className="sm:h-[300px]">
               <AreaChart data={mockPerformanceData}>
                 <defs>
                   <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
@@ -270,11 +270,11 @@ const Dashboard = () => {
         </Card>
 
         <Card>
-          <CardHeader>
-            <CardTitle>Distribuição de Patrimônio</CardTitle>
+          <CardHeader className="px-3 sm:px-6 pt-3 sm:pt-6 pb-2 sm:pb-4">
+            <CardTitle className="text-base sm:text-lg">Distribuição de Patrimônio</CardTitle>
           </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
+          <CardContent className="px-2 sm:px-6 pb-3 sm:pb-6">
+            <ResponsiveContainer width="100%" height={250} className="sm:h-[300px]">
               <PieChart>
                 <Pie
                   data={distributionData}
@@ -306,21 +306,21 @@ const Dashboard = () => {
 
       {/* Income & Expenses Analysis */}
       <Card>
-        <CardHeader>
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <CardHeader className="px-3 sm:px-6 pt-3 sm:pt-6 pb-2 sm:pb-4">
+          <div className="flex flex-col gap-3 sm:gap-4">
             <div>
-              <CardTitle className="flex items-center gap-2">
-                <Calendar className="h-5 w-5" />
+              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                <Calendar className="h-4 w-4 sm:h-5 sm:w-5" />
                 Receitas & Despesas
               </CardTitle>
-              <p className="text-sm text-muted-foreground mt-1">
+              <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                 Análise de movimentações financeiras
               </p>
             </div>
-            <div className="flex flex-col sm:flex-row gap-3">
+            <div className="grid grid-cols-2 sm:flex sm:flex-row gap-2 sm:gap-3">
               <Select value={selectedAccountId} onValueChange={setSelectedAccountId}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Selecione a conta" />
+                <SelectTrigger className="w-full sm:w-[180px]">
+                  <SelectValue placeholder="Conta" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todas as contas</SelectItem>
@@ -333,7 +333,7 @@ const Dashboard = () => {
               </Select>
 
               <Select value={selectedPeriod} onValueChange={(v) => setSelectedPeriod(v as any)}>
-                <SelectTrigger className="w-[140px]">
+                <SelectTrigger className="w-full sm:w-[140px]">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -346,57 +346,57 @@ const Dashboard = () => {
             </div>
           </div>
         </CardHeader>
-        <CardContent>
-          <div className="grid gap-6 lg:grid-cols-3 mb-6">
+        <CardContent className="px-2 sm:px-6 pb-3 sm:pb-6">
+          <div className="grid gap-3 sm:gap-4 lg:gap-6 grid-cols-1 sm:grid-cols-3 mb-4 sm:mb-6">
             <Card className="bg-muted/50">
-              <CardContent className="pt-6">
+              <CardContent className="p-3 sm:pt-6 sm:px-6 sm:pb-6">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Receitas</p>
-                    <p className="text-2xl font-bold text-success">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs sm:text-sm text-muted-foreground">Receitas</p>
+                    <p className="text-lg sm:text-xl lg:text-2xl font-bold text-success truncate">
                       {formatCurrency(transactionsData.totalIncome)}
                     </p>
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">
                       {transactionsData.incomePercentage.toFixed(1)}% do total
                     </p>
                   </div>
-                  <ArrowUpRight className="h-8 w-8 text-success" />
+                  <ArrowUpRight className="h-6 w-6 sm:h-8 sm:w-8 text-success flex-shrink-0" />
                 </div>
               </CardContent>
             </Card>
 
             <Card className="bg-muted/50">
-              <CardContent className="pt-6">
+              <CardContent className="p-3 sm:pt-6 sm:px-6 sm:pb-6">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Despesas</p>
-                    <p className="text-2xl font-bold text-destructive">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs sm:text-sm text-muted-foreground">Despesas</p>
+                    <p className="text-lg sm:text-xl lg:text-2xl font-bold text-destructive truncate">
                       {formatCurrency(transactionsData.totalExpense)}
                     </p>
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">
                       {transactionsData.expensePercentage.toFixed(1)}% do total
                     </p>
                   </div>
-                  <ArrowDownRight className="h-8 w-8 text-destructive" />
+                  <ArrowDownRight className="h-6 w-6 sm:h-8 sm:w-8 text-destructive flex-shrink-0" />
                 </div>
               </CardContent>
             </Card>
 
             <Card className="bg-muted/50">
-              <CardContent className="pt-6">
+              <CardContent className="p-3 sm:pt-6 sm:px-6 sm:pb-6">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Balanço</p>
-                    <p className={`text-2xl font-bold ${
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs sm:text-sm text-muted-foreground">Balanço</p>
+                    <p className={`text-lg sm:text-xl lg:text-2xl font-bold truncate ${
                       transactionsData.balance >= 0 ? 'text-success' : 'text-destructive'
                     }`}>
                       {formatCurrency(transactionsData.balance)}
                     </p>
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">
                       {transactionsData.balance >= 0 ? 'Superávit' : 'Déficit'}
                     </p>
                   </div>
-                  <TrendingUp className={`h-8 w-8 ${
+                  <TrendingUp className={`h-6 w-6 sm:h-8 sm:w-8 flex-shrink-0 ${
                     transactionsData.balance >= 0 ? 'text-success' : 'text-destructive'
                   }`} />
                 </div>
@@ -404,14 +404,14 @@ const Dashboard = () => {
             </Card>
           </div>
 
-          <div className="grid gap-6 lg:grid-cols-2">
+          <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
             <div>
-              <h3 className="text-sm font-medium mb-4">Valores</h3>
-              <ResponsiveContainer width="100%" height={250}>
+              <h3 className="text-xs sm:text-sm font-medium mb-2 sm:mb-4">Valores</h3>
+              <ResponsiveContainer width="100%" height={200} className="sm:h-[250px]">
                 <BarChart data={transactionsData.chartData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" />
-                  <YAxis stroke="hsl(var(--muted-foreground))" />
+                  <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" tick={{ fontSize: 12 }} />
+                  <YAxis stroke="hsl(var(--muted-foreground))" tick={{ fontSize: 12 }} />
                   <Tooltip
                     contentStyle={{
                       backgroundColor: 'hsl(var(--card))',
@@ -430,8 +430,8 @@ const Dashboard = () => {
             </div>
 
             <div>
-              <h3 className="text-sm font-medium mb-4">Distribuição (%)</h3>
-              <ResponsiveContainer width="100%" height={250}>
+              <h3 className="text-xs sm:text-sm font-medium mb-2 sm:mb-4">Distribuição (%)</h3>
+              <ResponsiveContainer width="100%" height={200} className="sm:h-[250px]">
                 <PieChart>
                   <Pie
                     data={transactionsData.pieData}

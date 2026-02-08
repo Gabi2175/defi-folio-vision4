@@ -193,25 +193,25 @@ const Assets = () => {
   }, [assets, totalCurrent]);
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
         <div>
-          <h1 className="text-4xl font-bold text-foreground mb-2">Ativos</h1>
-          <p className="text-muted-foreground">Controle seus preços médios e patrimônio</p>
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-1 sm:mb-2">Ativos</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">Controle seus preços médios e patrimônio</p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setTransactionDialogOpen(true)}>
-            <ShoppingCart className="mr-2 h-4 w-4" />
-            Comprar/Vender
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" onClick={() => setTransactionDialogOpen(true)} className="flex-1 sm:flex-none text-xs sm:text-sm">
+            <ShoppingCart className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden xs:inline">Comprar/</span>Vender
           </Button>
           <Dialog open={dialogOpen} onOpenChange={(open) => {
             setDialogOpen(open);
             if (!open) resetForm();
           }}>
             <DialogTrigger asChild>
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                Adicionar Ativo
+              <Button className="flex-1 sm:flex-none text-xs sm:text-sm">
+                <Plus className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden xs:inline">Adicionar </span>Ativo
               </Button>
             </DialogTrigger>
           <DialogContent className="max-w-md">
@@ -311,47 +311,47 @@ const Assets = () => {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className="grid gap-3 sm:gap-4 lg:gap-6 grid-cols-1 sm:grid-cols-3">
         <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+          <CardHeader className="px-3 sm:px-6 pt-3 sm:pt-6 pb-1 sm:pb-2">
+            <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">
               Valor Investido
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(totalInvested)}</div>
+          <CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
+            <div className="text-lg sm:text-xl lg:text-2xl font-bold truncate">{formatCurrency(totalInvested)}</div>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+          <CardHeader className="px-3 sm:px-6 pt-3 sm:pt-6 pb-1 sm:pb-2">
+            <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">
               Valor Atual
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(totalCurrent)}</div>
+          <CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
+            <div className="text-lg sm:text-xl lg:text-2xl font-bold truncate">{formatCurrency(totalCurrent)}</div>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+          <CardHeader className="px-3 sm:px-6 pt-3 sm:pt-6 pb-1 sm:pb-2">
+            <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">
               Lucro/Prejuízo
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
             <div
-              className={`text-2xl font-bold flex items-center ${
+              className={`text-lg sm:text-xl lg:text-2xl font-bold flex items-center ${
                 totalPNL >= 0 ? 'text-success' : 'text-destructive'
               }`}
             >
               {totalPNL >= 0 ? (
-                <TrendingUp className="mr-2 h-5 w-5" />
+                <TrendingUp className="mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5" />
               ) : (
-                <TrendingDown className="mr-2 h-5 w-5" />
+                <TrendingDown className="mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5" />
               )}
-              {formatCurrency(Math.abs(totalPNL))}
+              <span className="truncate">{formatCurrency(Math.abs(totalPNL))}</span>
             </div>
-            <p className={`text-sm mt-1 ${totalPNL >= 0 ? 'text-success' : 'text-destructive'}`}>
+            <p className={`text-xs sm:text-sm mt-1 ${totalPNL >= 0 ? 'text-success' : 'text-destructive'}`}>
               {totalPNL >= 0 ? '+' : ''}{totalPNLPercentage.toFixed(2)}%
             </p>
           </CardContent>
@@ -361,11 +361,11 @@ const Assets = () => {
       {/* Asset Distribution Chart */}
       {assets.length > 0 && (
         <Card>
-          <CardHeader>
-            <CardTitle>Distribuição de Ativos</CardTitle>
+          <CardHeader className="px-3 sm:px-6 pt-3 sm:pt-6 pb-2 sm:pb-4">
+            <CardTitle className="text-base sm:text-lg">Distribuição de Ativos</CardTitle>
           </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
+          <CardContent className="px-2 sm:px-6 pb-3 sm:pb-6">
+            <ResponsiveContainer width="100%" height={250} className="sm:h-[300px]">
               <PieChart>
                 <Pie
                   data={assetDistributionData}
@@ -373,7 +373,7 @@ const Assets = () => {
                   cy="50%"
                   labelLine={false}
                   label={({ name, percent }) => `${name} ${(percent * 100).toFixed(1)}%`}
-                  outerRadius={100}
+                  outerRadius={80}
                   fill="#8884d8"
                   dataKey="value"
                 >
@@ -397,17 +397,17 @@ const Assets = () => {
 
       {/* Assets Table */}
       <Card>
-        <CardHeader>
-          <CardTitle>Lista de Ativos</CardTitle>
+        <CardHeader className="px-3 sm:px-6 pt-3 sm:pt-6 pb-2 sm:pb-4">
+          <CardTitle className="text-base sm:text-lg">Lista de Ativos</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-2 sm:px-6 pb-3 sm:pb-6">
           {assets.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
+            <div className="text-center py-8 sm:py-12 text-sm sm:text-base text-muted-foreground">
               Nenhum ativo cadastrado. Adicione seu primeiro ativo!
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <Table>
+            <div className="overflow-x-auto -mx-2 sm:mx-0">
+              <Table className="text-xs sm:text-sm">
                 <TableHeader>
                   <TableRow>
                     <TableHead>Nome</TableHead>
