@@ -242,7 +242,7 @@ const Accounts = () => {
       });
 
       if (sourceError) {
-        console.error('Update source balance error:', sourceError);
+        if (import.meta.env.DEV) console.error('Update source balance error:', sourceError);
         toast({ 
           title: 'Aviso', 
           description: 'Transação criada, mas houve um erro ao atualizar o saldo da conta de origem.', 
