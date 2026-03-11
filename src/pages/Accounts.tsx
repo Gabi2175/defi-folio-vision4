@@ -270,7 +270,7 @@ const Accounts = () => {
       });
 
       if (destError) {
-        console.error('Update destination balance error:', destError);
+        if (import.meta.env.DEV) console.error('Update destination balance error:', destError);
         toast({ 
           title: 'Aviso', 
           description: 'Transação criada, mas houve um erro ao atualizar o saldo da conta de destino.', 
