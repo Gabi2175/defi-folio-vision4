@@ -10,6 +10,7 @@ import { useAccounts } from '@/hooks/useAccounts';
 import { useCurrency } from '@/hooks/useCurrency';
 import { Account } from '@/types/finance';
 import { formatDate } from '@/lib/calculations';
+import { getUserFriendlyError } from '@/lib/errorHandler';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
