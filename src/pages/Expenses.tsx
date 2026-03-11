@@ -490,10 +490,17 @@ const Expenses = () => {
                 <CardTitle>Histórico de Transações</CardTitle>
                 <CardDescription>Todas as suas receitas e despesas</CardDescription>
               </div>
-              <TransactionPeriodFilter
-                value={transactionPeriodFilter}
-                onChange={setTransactionPeriodFilter}
-              />
+              <div className="flex items-center gap-2 flex-wrap">
+                <TransactionPeriodFilter
+                  value={transactionPeriodFilter}
+                  onChange={setTransactionPeriodFilter}
+                />
+                <CategoryFilter
+                  categories={categories}
+                  selectedCategoryIds={selectedCategoryIds}
+                  onChange={setSelectedCategoryIds}
+                />
+              </div>
             </CardHeader>
             <CardContent>
               <Table>
