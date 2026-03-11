@@ -17,6 +17,7 @@ import { ptBR } from 'date-fns/locale';
 import { getUserFriendlyError } from '@/lib/errorHandler';
 import { transactionSchema, categorySchema } from '@/lib/validations';
 import { TransactionPeriodFilter, PeriodFilter, filterTransactionsByPeriod } from '@/components/TransactionPeriodFilter';
+import { CategoryFilter } from '@/components/CategoryFilter';
 
 interface Category {
   id: string;
