@@ -286,7 +286,7 @@ const Accounts = () => {
       });
 
       if (balanceError) {
-        console.error('Update balance error:', balanceError);
+        if (import.meta.env.DEV) console.error('Update balance error:', balanceError);
         toast({ 
           title: 'Aviso', 
           description: 'Transação criada, mas houve um erro ao atualizar o saldo.', 

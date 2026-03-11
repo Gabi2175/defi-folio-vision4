@@ -153,7 +153,7 @@ export function PayInvoiceDialog({ open, onOpenChange, card }: PayInvoiceDialogP
       onOpenChange(false);
       setInstallmentsToPay('1');
     } catch (error: any) {
-      console.error('Error paying invoice:', error);
+      if (import.meta.env.DEV) console.error('Error paying invoice:', error);
       toast({
         title: 'Erro',
         description: 'Erro ao pagar fatura. Nenhuma alteração foi realizada.',
