@@ -10,6 +10,7 @@ import { useAccounts } from '@/hooks/useAccounts';
 import { useCurrency } from '@/hooks/useCurrency';
 import { Account } from '@/types/finance';
 import { formatDate } from '@/lib/calculations';
+import { getUserFriendlyError } from '@/lib/errorHandler';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -226,7 +227,7 @@ const Accounts = () => {
     if (error) {
       toast({
         title: 'Erro',
-        description: error.message,
+        description: getUserFriendlyError(error),
         variant: 'destructive',
       });
       return;
@@ -242,7 +243,7 @@ const Accounts = () => {
       });
 
       if (sourceError) {
-        console.error('Update source balance error:', sourceError);
+        if (import.meta.env.DEV) console.error('Update source balance error:', sourceError);
         toast({ 
           title: 'Aviso', 
           description: 'Transação criada, mas houve um erro ao atualizar o saldo da conta de origem.', 
@@ -270,7 +271,7 @@ const Accounts = () => {
       });
 
       if (destError) {
-        console.error('Update destination balance error:', destError);
+        if (import.meta.env.DEV) console.error('Update destination balance error:', destError);
         toast({ 
           title: 'Aviso', 
           description: 'Transação criada, mas houve um erro ao atualizar o saldo da conta de destino.', 
@@ -286,7 +287,7 @@ const Accounts = () => {
       });
 
       if (balanceError) {
-        console.error('Update balance error:', balanceError);
+        if (import.meta.env.DEV) console.error('Update balance error:', balanceError);
         toast({ 
           title: 'Aviso', 
           description: 'Transação criada, mas houve um erro ao atualizar o saldo.', 

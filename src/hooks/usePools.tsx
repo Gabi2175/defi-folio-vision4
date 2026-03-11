@@ -17,7 +17,7 @@ export const usePools = () => {
         .order('created_at', { ascending: false });
       
       if (error) {
-        console.error('Fetch pools error:', error);
+        if (import.meta.env.DEV) console.error('Fetch pools error:', error);
         throw error;
       }
       
