@@ -56,10 +56,15 @@ const Expenses = () => {
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
   const [transactionDialogOpen, setTransactionDialogOpen] = useState(false);
   const [transactionPeriodFilter, setTransactionPeriodFilter] = useState<PeriodFilter>('month');
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
 
   const filteredTransactions = useMemo(() => {
-    return filterTransactionsByPeriod(transactions, transactionPeriodFilter);
-  }, [transactions, transactionPeriodFilter]);
+    let result = filterTransactionsByPeriod(transactions, transactionPeriodFilter);
+    if (selectedCategoryIds.length > 0) {
+      result = result.filter(t => t.category_id && selectedCategoryIds.includes(t.category_id));
+    }
+    return result;
+  }, [transactions, transactionPeriodFilter, selectedCategoryIds]);
   const [categoryForm, setCategoryForm] = useState({ name: '', type: 'expense' as 'income' | 'expense', color: '#3b82f6' });
   const [transactionForm, setTransactionForm] = useState({
     type: 'expense' as 'income' | 'expense',
