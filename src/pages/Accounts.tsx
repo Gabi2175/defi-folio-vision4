@@ -226,7 +226,7 @@ const Accounts = () => {
     if (error) {
       toast({
         title: 'Erro',
-        description: error.message,
+        description: getUserFriendlyError(error),
         variant: 'destructive',
       });
       return;
